@@ -1,0 +1,45 @@
+version: "3"
+services:
+  mysql:
+    build: ./mockConfig/mysql
+    ports:
+      - 3456:3306
+    command: --default-authentication-plugin=mysql_native_password
+
+  reverseproxy:
+    build: ./mockConfig/nginx
+    ports:
+      - 443:443
+      - 80:80
+    restart: always
+    depends_on:
+      - apache
+      - php
+      - mysql
+
+  apache:
+    build: ./mockConfig/apache
+    restart: always
+    volumes:
+      - ./new-bookings:/var/www/html/app
+      - ./bookings_kr:/var/www/html/oldapp
+      - ./mockConfig/apache/bookings.conf:/vhosts/my_vhost.conf:ro
+    links:
+      - php:php
+      - mysql:mysql
+    environment:
+      - WEB_PHP_SOCKET= "php:9000"
+    ports:
+      - 8100:8100
+      - 8101:8101
+  php:
+    build: ./mockConfig/php
+    ports:
+      - 9000:9000
+    volumes:
+      - ./new-bookings:/var/www/html/app
+      - ./bookings_kr:/var/www/html/oldapp
+    links:
+      - mysql
+    depends_on:
+      - mysql
