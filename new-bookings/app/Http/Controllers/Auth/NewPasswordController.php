@@ -39,15 +39,18 @@ class NewPasswordController extends Controller
             'email' => 'required|email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
-
+        $customRequest = [
+            ...['usr_email' => $request->only('email')['email']],
+            ...$request->only('password', 'password_confirmation', 'token')
+        ];
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the
         // database. Otherwise we will parse the error and return the response.
         $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
+            $customRequest,
             function ($user) use ($request) {
                 $user->forceFill([
-                    'password' => Hash::make($request->password),
+                    'usr_hash' => Hash::make($request->password),
                     'remember_token' => Str::random(60),
                 ])->save();
 

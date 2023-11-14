@@ -1,0 +1,530 @@
+@CHARSET "UTF-8";
+
+
+select.select_extra{
+	display:none;
+	width:180px !important;
+}
+#datepicker_container {
+	padding-left: 8px;
+}
+#datepicker_container > div{
+	background-color: #FFFFFF;
+	border-radius: 13px;
+	margin-bottom: 20px;
+}
+.undo{
+	display:none;
+}
+.confirmed{
+	background-color:#1A14A7 !important;
+}
+.confirmed > .special_users .special_remove{
+	display:none;
+}
+
+.confirmed > .event_time >.icon-comment, 
+.confirmed > .event_time >.confirm, 
+.confirmed > .event_time >.cancel, 
+.confirmed > .event_time >.icon-plus {
+	display:none;
+}
+
+.confirmed .undo{
+	display:block;
+}
+
+.hours_left{
+	height:18px;
+	text-align:center;
+}
+.special_users{
+	clear: both;
+	font-size: 10px;
+}
+.special_users > div > div.icon-remove-circle {
+	float:right;
+	cursor:pointer;
+}
+.special_users > div{
+	padding-left:4px;
+	padding-right:4px;
+	padding-bottom:2px;
+}
+#more_icon{
+	position: absolute;
+	margin-left: 886px;
+	margin-top: 9px;
+	z-index: 20;
+}
+	
+
+
+#editNotes{
+	font-size: smaller;
+	width: 179px;
+	margin: 3px;
+}
+
+select#ddl_instructors{
+	height: 20px;
+	line-height: 20px;
+	width:180px;
+	float:left;
+}
+
+
+div.cal_day > div.event >	div.event_time >	 .remove {
+	display:none;
+}
+
+
+
+ div.wishlist > div.event > div.event_time >	 .remove {
+	display:block !important;
+}
+ div.wishlist {
+	/* float: left; */
+	width: 225px;
+	height: 948px;
+	-moz-border-radius: 11px;
+	-webkit-border-radius: 11px;
+	-khtml-border-radius: 11px;
+	border-radius: 11px;
+	overflow: auto;
+	margin-left: 10px;
+	border: 1px solid #BEBEBE;
+	background-color: #FFFFFF;
+	padding-left: 15px;
+
+}
+
+.cal_body > .wishlist_container{
+	float:left;
+	clear:right;
+	
+}
+ div.wishlist > div.title_row {
+	font-weight:bold;
+	text-align:center;
+	width: 200px;
+	margin-top: 10px;
+}
+ div.wishlist > div.lock20 {
+	height:120px !important;
+	top:0 !important;
+}
+.wishlist .lock20 .special_remove{
+	display:none;
+}
+ div.wishlist > div.red_event {
+	background: #961D1D !important;
+}
+
+
+
+ div.wishlist > div.event {
+
+	left: 1;
+	width:199px;
+	background: #6af;
+	color: #fff;
+	z-index:1;
+ 	-moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;	
+}
+
+ div.wishlist > div.event > div.booking{
+	position:absolute;
+	width:160px;
+	background:red;
+	left:15px;
+	-moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;	
+    
+	
+	font-size: 10px;
+	padding-left: 10px;
+	line-height:14px;
+	
+
+}
+
+ div.wishlist > div.event:hover {
+	z-index: 2;
+	cursor:move;
+}
+
+div.wishlist > div.event > div.event_time {
+	width:193px;
+	height:15px;
+	padding:3px;
+	background: #02e;
+	
+	-moz-border-radius: 4px 4px 0 0 ;
+	-webkit-border-radius: 4px 4px 0 0;
+	-khtml-border-radius: 4px 4px 0 0;
+	border-radius: 4px 4px 0 0;
+	font-size:12px;
+    		
+}
+
+div.wishlist > div.event > div.event_time > div{
+	float:left;
+	margin-left: 4px;
+}
+
+
+
+ div.wishlist > div.event > div.event_time > div{
+	float:left;
+}
+
+div.wishlist > div.event > div.event_time > span{
+	float:right;
+	cursor:pointer;
+	display:none !important;
+}
+ div.wishlist > div.event > div.event_time > input[type="checkbox"]{
+	margin: 2px 4px 0;
+	float: right;
+
+}
+div.wishlist > div.event > div.event_time > div.n_cancel{
+	display:inline;
+	float:right;
+}
+
+
+div.cal_day > div.event > div.event_time > input[type="checkbox"]{
+	float: right !important;
+	margin: 2px !important;
+}
+ div.wishlist > div.event > .info_student{
+	clear:both;
+	float:left;
+	font-size:12px;
+	font-weight: lighter;
+}
+
+ div.wishlist > div.event > .info_notes{
+	
+	clear: both;
+	font-size: smaller;
+	max-height: 60px;
+	overflow: auto;
+	cursor:pointer;
+}
+
+ div.wishlist > div.event > .info_mobile{
+	font-weight: 100;
+	float:right;
+	font-size:12px;
+	
+}
+input.sms_instructor{
+	float:left;
+}
+
+div.container_cal {
+/*	width:1170px;
+	height:600px;
+	margin: 10px auto 0; */
+}
+
+div.container_cal > div.header {
+	width:900px;
+	height:34px;		
+}
+
+div.container_cal > div.header > div.username {
+	float:left;
+	padding-left:5px;
+}
+
+div.container_cal > div.header > div.logout {
+	float:right;
+	padding-right:5px;
+}	
+
+div.container_cal > div.calendar {
+	padding-bottom: 14px;
+	background: #eee;
+	overflow-x: auto;
+	border: solid;
+	border-color: #DADDEC;
+	position:relative;
+	
+}
+
+div.container_cal > div.calendar > div.cal_header {
+	width:800px;
+	margin-left:80px;
+	height:40px;
+	font-weight:bold;	
+}
+
+div.container_cal > div.calendar > div.cal_header > div.day_header {
+	float:left;
+	width:200px;
+	padding-top:4px;
+	text-align:center;	
+}
+div.container_cal > div.calendar > div.cal_header > div.day_header > div.title_row{
+	width: 160px;
+	float: left;
+	overflow: hidden;
+	
+}
+div.container_cal > div.calendar > div.cal_header > div.day_header > span.remove_row{
+	cursor:pointer;
+	
+}
+div.container_cal > div.calendar > div.cal_body {
+
+	overflow-y:auto;	
+}
+
+div.container_cal > div.calendar > div.cal_body > div.cal_times {
+	float:left;
+	width:78px;
+/* height:450px; */
+}
+
+div.container_cal > div.calendar > div.cal_body > div.cal_times > div.cal_time {
+	width:73px;
+	height:80px;
+	padding-right:5px;
+	font-size:15px;
+	color: #222;
+	text-align:right;	
+	
+}
+
+div.container_cal > div.calendar > div.cal_body > div.cal_days {
+	float:left;
+	border:1px solid #ccc;
+	width:800px;	
+	background:white;
+	margin-right: 10px;
+}
+
+div.container_cal > div.calendar > div.cal_body > div.cal_days > div.cal_day {
+	float:left;
+	position:relative;
+	width:200px;
+}
+
+div.container_cal > div.calendar > div.cal_body > div.cal_days > div.cal_day > div.cal_half_hour {
+	width:199px;
+	height:19px;
+	border-right:1px solid #ccc;
+	border-bottom:1px solid #ccc;
+}
+
+div.container_cal > div.calendar > div.cal_body > div.cal_days > div.cal_day > div.cal_half_hour:hover {
+	cursor:pointer;
+	background: #ffc;	
+}
+
+div.cal_day > div.event {
+	position:absolute;
+	left: 1;
+	width:199px;
+	min-height:40px;
+	background: #6af;
+	color: #fff;
+	z-index:1;
+ 	-moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;	
+}
+
+div.cal_day > div.event > div.booking{
+	position:absolute;
+	width:160px;
+	background:red;
+	left:15px;
+	-moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;	
+    
+
+font-size: 10px;
+padding-left: 10px;
+line-height:14px;
+	
+
+}
+
+
+div.cal_day > div.event:hover {
+	z-index: 2;
+	cursor:move;
+}
+
+div.cal_day > div.event > div.event_time {
+	width:193px;
+	height:15px;
+	padding:3px;
+	background: #02e;
+	-moz-border-radius: 4px 4px 0 0 ;
+	-webkit-border-radius: 4px 4px 0 0;
+	-khtml-border-radius: 4px 4px 0 0;
+	border-radius: 4px 4px 0 0;
+	font-size:9px;
+    		
+}
+
+div.cal_day > div.event > div.event_time > div{
+	float:left;
+	margin-left: 4px;
+}
+
+div.cal_day > div.event > div.event_time > span{
+	float:right;
+	cursor:pointer;
+}
+div.cal_day > div.event > div.event_time > div.n_cancel{
+	display:none;
+}
+div.cal_day > div.event > .info_student{
+	clear:both;
+	float:left;
+	font-size:12px;
+	font-weight: 300;	
+}
+
+div.cal_day > div.event > .info_mobile{
+
+	float:right;
+	font-weight: 100;
+	
+
+}
+
+div.cal_day > div.event > .info_notes{
+
+	display:none !important;
+
+}
+
+
+div.cal_day > div.event > div.event_delete {
+	position:absolute;
+	top:3px;
+	right:4px;
+	font-weight:bold;
+	cursor:pointer;
+}
+
+div.cal_day > div.event > div.event_name {
+	margin:5px;
+}
+div.cal_day > div.event > div.event_name > a {
+	margin:5px;
+}
+div.cal_day > div.event > div.event_name > a.icon-thumbs-up {
+	float:right;
+}
+div.cal_day > div.event > div.event_name > a.icon-thumbs-down {
+	float:left;
+}
+div.cal_day > div.event > div.event_name > select.select_student {
+	height: 20px !important;
+	line-height: 20px !important;
+
+}
+
+div.cal_day > div.event > div.event_level {
+	float: left;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-top: 4px;
+}
+div.cal_day > div.event > div.event_name:hover {
+	text-decoration:underline;
+	cursor:pointer;	
+}
+
+div.cal_day > div.event > div.event_name > input[type=text] {
+	height:16px;
+	width:180px;
+	padding: 0;
+	border:1px solid #ccc;
+}
+
+/* Simple demo calendar styling */
+div.demo_cal {
+	width:600px;
+	height:400px;
+	margin:40px auto 0; 
+	border:1px solid #bbb;
+	background:white;
+}
+
+div.demo_cal > div.demo_cal_col {
+	float:left;
+	border-right:1px solid #bbb;
+	width:149px;
+	height:400px;
+	position:relative;
+}
+
+div.demo_cal > div.demo_cal_col_last {
+	float:left;
+	width:149px;
+	height:400px;
+	position:relative;	
+}
+
+div.demo_event {
+	position:absolute;
+	cursor:move;
+	width:141px;
+	height:32px;
+	background: #6af;
+	color:#fff;
+	padding:4px;
+	font-weight:bold;
+	z-index:1;
+}
+.edit_notes{
+	width:150px;
+	margin:4px;
+
+}
+.background_block{
+	position: absolute;
+	top: 0;
+	left: 0;
+	background-color: rgb(102, 102, 111);
+	z-index: 20;
+	opacity: 0.4;
+	display:none;
+	height:500px;
+}
+.div_new{
+	position:absolute;
+	z-index:24;
+}
+.not_available{
+	background: rgb(127, 211, 207) !important;
+}
+.name_search_special{
+	width: 140px !important;
+	font-size: 10px !important;
+	margin-top: -1px !important;
+	padding: 0px !important;
+	height: 15px !important;
+	line-height: 10px !important;
+}
+.correicon{
+	margin-top:-4px !important;
+}

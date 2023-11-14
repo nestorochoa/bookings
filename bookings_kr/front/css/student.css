@@ -1,0 +1,31 @@
+@charset "UTF-8";
+/* CSS Document */
+.bookable{
+	border: 1px solid #EBEBEB !important;
+	color: blue;
+}
+.form-horizontal .controls{
+	margin-left: 28%;
+}
+.small-grey-well{
+	background-color: #EBEBEB;
+	padding: 20px;
+	border-radius: 10px;
+}
+.form-horizontal .control-label{
+	width: 80px;
+	
+}
+.datepicker{
+	background-color:#FFFFFF;
+}
+
+@media (max-width: 480px){
+	.form-horizontal .controls {
+		margin-left: 0;
+	}
+}
+@media (max-width: 979px) and (min-width: 768px){
+	
+
+}

@@ -16,6 +16,7 @@ services:
       - apache
       - php
       - mysql
+      - mailhog
 
   apache:
     build: ./mockConfig/apache
@@ -43,3 +44,9 @@ services:
       - mysql
     depends_on:
       - mysql
+  mailhog:
+    image: mailhog/mailhog
+    container_name: "mailhog"
+    ports:
+      - "1025:1025"
+      - "8025:8025"
