@@ -1,4 +1,4 @@
-<?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 /*
 | -------------------------------------------------------------------------
 | URI ROUTING
@@ -49,12 +49,14 @@ $route['main'] = "welcome/main";
 $route['user_edit'] = "welcome/user_edit";
 $route['user_edit/(:any)'] = "welcome/user_edit/$0";
 
+$route['instructors/schedule/(:any)'] = "instructors/scheduleInstructor/$1";
+
 $route['users'] = "welcome/users";
-$route['instructors'] = "welcome/instructors";
+$route['instructors'] = "instructors/instructors";
 $route['students'] = "welcome/students";
 $route['extract/(:any)'] = "welcome/extract/$1";
 $route['users/(:any)'] = "welcome/users/$0";
-$route['instructors/(:any)'] = "welcome/instructors/$0";
+$route['instructors/(:any)'] = "instructors/instructors/$0";
 $route['students/(:any)'] = "welcome/students/$0";
 $route['lesson_hours'] = "welcome/lesson_hours";
 $route['forgot_password'] = "welcome/forgot_password";

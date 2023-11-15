@@ -1,25 +1,3 @@
-vendors/
-new-bookings/.phpunit.cache
-new-bookings/node_modules
-new-bookings/public/build
-new-bookings/public/hot
-new-bookings/public/storage
-new-bookings/storage/*.key
-new-bookings/vendor
-.env
-.env.backup
-.env.production
-.phpunit.result.cache
-Homestead.json
-Homestead.yaml
-auth.json
-npm-debug.log
-yarn-error.log
-new-bookings/.fleet
-new-bookings/.idea
-new-bookings/.vscode
-node_modules/
-
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 # compiled output
@@ -59,3 +37,5 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+.nx/cache

@@ -1,0 +1,80 @@
+{
+  "name": "schedule",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/schedule/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "compiler": "babel",
+        "outputPath": "dist/apps/schedule",
+        "index": "apps/schedule/src/index.html",
+        "baseHref": "/",
+        "main": "apps/schedule/src/main.tsx",
+        "polyfills": "apps/schedule/src/polyfills.ts",
+        "tsConfig": "apps/schedule/tsconfig.app.json",
+        "assets": ["apps/schedule/src/favicon.ico", "apps/schedule/src/assets"],
+        "styles": [],
+        "scripts": [],
+        "webpackConfig": "apps/schedule/webpack.custom.js"
+      },
+      "configurations": {
+        "development": {
+          "extractLicenses": false,
+          "optimization": false,
+          "sourceMap": true,
+          "vendorChunk": true
+        },
+        "production": {
+          "fileReplacements": [
+            {
+              "replace": "apps/schedule/src/environments/environment.ts",
+              "with": "apps/schedule/src/environments/environment.prod.ts"
+            }
+          ],
+          "optimization": true,
+          "outputHashing": "all",
+          "sourceMap": false,
+          "namedChunks": false,
+          "extractLicenses": true,
+          "vendorChunk": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/webpack:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "schedule:build",
+        "hmr": true
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "schedule:build:development"
+        },
+        "production": {
+          "buildTarget": "schedule:build:production",
+          "hmr": false
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/schedule/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/schedule/jest.config.ts"
+      }
+    }
+  },
+  "tags": []
+}

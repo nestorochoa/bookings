@@ -42,9 +42,10 @@ if (!function_exists('users_selection')) {
 	function users_selection($user_type, $limit_low, $limit_up, $name = NULL, $phone = NULL, $level = NULL)
 	{
 		$CI = &get_instance();
-		$CI->db->select('*');
-		$CI->db->where('usr_type', $user_type);
-		$CI->db->from('bk_users');
+		$CI->db
+			->select('*')
+			->where('usr_type', $user_type)
+			->from('bk_users');
 		if ($user_type == 4) {
 			$CI->db->join('student_details', 'st_id = usr_id');
 		}
@@ -61,21 +62,21 @@ if (!function_exists('users_selection')) {
 				}
 				$where .= '(usr_name like "%' . $name . '%" OR usr_surname  like "%' . $name . '%" OR usr_phone_main  like "%' . $name . '%" OR usr_email  like "%' . $name . '%")';
 			}
-			$CI->db->where($where);
-			$CI->db->order_by('usr_name', 'asc');
-			$CI->db->order_by('usr_surname', 'asc');
+			$CI->db->where($where)
+				->order_by('usr_name', 'asc')
+				->order_by('usr_surname', 'asc');
 		}
 
 		$query_r['without'] = $CI->db->get();
 
 
-		$CI->db->select('*');
-		$CI->db->where('usr_type', $user_type);
-		$CI->db->from('bk_users');
+		$CI->db->select('*')
+			->where('usr_type', $user_type)
+			->from('bk_users')
+			->limit($limit_low, $limit_up);
 		if ($user_type == 4) {
 			$CI->db->join('student_details', 'st_id = usr_id');
 		}
-		$CI->db->limit($limit_low, $limit_up);
 
 		if ($name == NULL && $phone == NULL && $level == NULL) {
 			$CI->db->order_by('usr_id', 'desc');
@@ -88,9 +89,9 @@ if (!function_exists('users_selection')) {
 				}
 				$where .= '(usr_name like "%' . $name . '%" OR usr_surname  like "%' . $name . '%" OR usr_phone_main  like "%' . $name . '%" OR usr_email  like "%' . $name . '%")';
 			}
-			$CI->db->where($where);
-			$CI->db->order_by('usr_name', 'asc');
-			$CI->db->order_by('usr_surname', 'asc');
+			$CI->db->where($where)
+				->order_by('usr_name', 'asc')
+				->order_by('usr_surname', 'asc');
 		}
 		$query_r['with'] = $CI->db->get();
 

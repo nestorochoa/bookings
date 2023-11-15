@@ -450,34 +450,6 @@ class Welcome extends CI_Controller
 		}
 	}
 
-	public function instructors()
-	{
-
-		if ($this->session->userdata('user_id')) {
-			$user_access = 3;
-			$data['user_level'] = $user_access;
-			$data['warning'] = '';
-			if ($this->session->userdata('user_type') >= $user_access) {
-				$data['warning'] = 'Access forbidden';
-			}
-
-			$this->load->library('pagination');
-			$this->load->helper('misc');
-			$this->config_pag['base_url'] = base_url() . 'instructors';
-
-			$temp_res = users_selection(3, $this->config_pag['per_page'], $this->uri->segment(2), $this->input->get("search_user"), $phone = NULL, $level = NULL);
-			$this->config_pag['total_rows'] = $temp_res['without']->num_rows();
-			$this->pagination->initialize($this->config_pag);
-			$data['links_pag'] = $this->pagination->create_links();
-			$data['user_list'] = $temp_res['with'];
-			$data['basic_var'] = $this->basic_var;
-			$data['show_hours'] = true;
-			$this->load->view('users', $data);
-		} else {
-			header("Location: " . base_url());
-		}
-	}
-
 	public function students()
 	{
 

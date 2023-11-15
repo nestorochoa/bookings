@@ -1,8 +1,10 @@
-<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-class Reports extends CI_Controller {
+class Reports extends CI_Controller
+{
 
-	public function __construct(){
+	public function __construct()
+	{
 		parent::__construct();
 		$this->load->database();
 		$this->load->helper('url');
@@ -16,71 +18,55 @@ class Reports extends CI_Controller {
 		$this->basic_var['recordset_menu'] = NULL;
 		$this->config_pag['per_page'] = 10;
 		$this->config_pag['num_links'] = 10;
-		$this->config_pag['uri_segment']= 2;
+		$this->config_pag['uri_segment'] = 2;
 
-		
-		
-		if($this->session->userdata('user_id')){
+		if ($this->session->userdata('user_id')) {
 			$this->load->helper('mysqli');
 			$user_type = $this->session->userdata('user_type');
-			$this->basic_var['recordset_menu']= $this->db->query("CALL menu_user_type('{$user_type}');");
-			clean_mysqli_connection($this->db->conn_id); 
+			$this->basic_var['recordset_menu'] = $this->db->query("CALL menu_user_type('{$user_type}');");
+			clean_mysqli_connection($this->db->conn_id);
 		}
-		
-		
-		
 	}
-	
-	public function student_info(){
-	
-		if($this->session->userdata('user_id') && $this->session->userdata('user_type') <= 2) {
-		
-			$ts=$this->uri->total_segments();
-			$offset= $this->uri->segment($ts);
-			
+
+	public function student_info()
+	{
+
+		if ($this->session->userdata('user_id') && $this->session->userdata('user_type') <= 2) {
+
+			$ts = $this->uri->total_segments();
+			$offset = $this->uri->segment($ts);
+
 			$this->load->helper('misc');
-			
-			if(is_numeric($offset)){
+
+			if (is_numeric($offset)) {
 				$data['basic_var'] = $this->basic_var;
-				
-				
+
+
 				$select_basic = 'Select * From bk_users Inner Join student_details On usr_id = st_id where usr_id = ' . $offset;
-				
+
 				$select_temp = 'SELECT * FROM (bk_days) LEFT JOIN special_group ON sg_day = bk_id JOIN bk_day_groups ON bd_id = bk_group LEFT JOIN bk_users instructor ON bd_instructor = instructor.usr_id  LEFT JOIN student_level On bk_lesson_level = sl_id WHERE IFNULL(bk_student,sg_student) = ' . $offset;
-				
-				$temp = $this->db->query($select_temp,FALSE);
-				
+
+				$temp = $this->db->query($select_temp, FALSE);
+
 				$select_vouchers = 'SELECT * FROM voucher_details INNER JOIN voucher_head On out_id = code_group INNER JOIN bk_users On usr_id = user_id
-				WHERE usr_id = ' . $offset ;
-				
+				WHERE usr_id = ' . $offset;
+
 				$data['information'] = $temp;
-				$data['basic_info'] = $this->db->query($select_basic,FALSE);
-				$data['voucher'] = $this->db->query($select_vouchers,FALSE);
-				
+				$data['basic_info'] = $this->db->query($select_basic, FALSE);
+				$data['voucher'] = $this->db->query($select_vouchers, FALSE);
+
 				/*$this->db->where('student.usr_id',$offset);
 				$this->db->join('special_group','sg_day = bk_id','left');
 				$this->db->join('bk_day_groups','bd_id = bk_day');
 				$this->db->join('bk_users instructor', 'bd_instructor = instructor.usr_id','left');
 				$this->db->join('bk_users student', 'IFNULL(bk_student,sg_student) = student.usr_id','left');
 				$temp = $this->db->get('bk_days');*/
-				
-				
-				$this->load->view('student_details',$data);
-			}		
-		
-	
-	
-	
-	
-		}else{
-			header("Location: ".base_url());
+
+
+				$this->load->view('student_details', $data);
+			}
+		} else {
+			header("Location: " . base_url());
 		}
-	
 	}
-	
-	
-	
-	
-	
-	
 }

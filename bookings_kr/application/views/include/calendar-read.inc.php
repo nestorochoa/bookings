@@ -1,19 +1,5 @@
 <script type="text/javascript" src="<?php echo base_url() ?>front/js/calendar.js?1234657878"></script>
-<div class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" id="new_sms" aria-hidden="true">
-	<div class="modal-header">
-		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-		<h3>Custom SMS</h3>
-	</div>
-	<div class="modal-body">
-		<textarea id="text_sms_custom" name="text_sms_custom" style="float: left;width: 400px;margin-right: 10px;"></textarea>
-		<button class="btn btn-mini btn-info" type="button" onclick="add_sms(1);">Add Name</button>
-		<button class="btn btn-mini btn-info" type="button" onclick="add_sms(2);">Add Date</button>
-	</div>
-	<div class="modal-footer">
-		<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-		<button data-dismiss="modal" class="btn btn-primary" onclick="Calendar.send_sms_ind(3,$('#text_sms_custom'));">Send</button>
-	</div>
-</div>
+
 <?
 function getTimes()
 {
@@ -38,50 +24,7 @@ function getTimes()
 }
 $times = getTimes();
 ?>
-<div class="row-fluid">
 
-	<div class="span2">
-		<!-- <div class="username"><?php echo $userdata['user_name'] ?></div> -->
-
-		<div class="btn-group">
-			<a class="btn btn-primary" href="#"><i class="icon-envelope icon-white"></i> SMS</a>
-			<a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a>
-			<ul class="dropdown-menu">
-				<li><a href="javascript:Calendar.send_sms_ind(1);"><i class="icon-ok"></i> Confirm</a></li>
-				<li><a href="javascript:Calendar.send_sms_ind(2);"><i class="icon-ban-circle"></i> Cancel</a></li>
-				<li><a href="javascript:Calendar.send_sms_confirm_day_after(general_date);"><i class="icon-ok"></i> Confirm day before</a></li>
-				<li><a href="javascript:Calendar.send_sms_confirm_instructors(general_date,'.sms_instructor');"><i class="icon-ok"></i> Confirm instructors</a></li>
-				<li><a href="#new_sms" data-toggle="modal" role="button"><i class="icon-ok"></i>Custom SMS</a></li>
-				<!--<li class="divider"></li>
-			    <li><a href="#"><i class="i"></i> Make admin</a></li> -->
-			</ul>
-		</div>
-
-
-
-	</div>
-	<div class="span2">
-		<div class="btn-group">
-			<form id="add_column" name="add_column" method="post" action="<? echo base_url() ?>/bookings">
-				<input type="hidden" id="add_ins" name="add_ins" value="1" />
-				<input type="hidden" id="date_sel" name="date_sel" value="<? echo $this->input->post('date_sel') ?>" />
-				<input type="hidden" id="del_ins" name="del_ins" value="" />
-				<input type="hidden" id="col_id" name="col_id" value="" />
-				<button class="btn btn-success" type="submit">Add Instructor</button>
-			</form>
-		</div>
-	</div>
-	<div class="span2">
-		<div class="btn-group">
-			<form id="add_student" name="add_student" method="post" action="<? echo base_url() ?>/user_edit" target="_blank">
-				<input type="hidden" id="from_bookings" name="from_bookings" value="1" />
-				<input type="hidden" id="user_type_form" name="user_type_form" value="4" />
-				<input type="hidden" id="user_type_form" name="user_id_form" value="New" />
-				<button class="btn btn-success" type="submit">Add Student</button>
-			</form>
-		</div>
-	</div>
-</div>
 <div class="row-fluid">
 	<div class="alert alert-error" id="message_error" style="display:none" onclick="$('#message_error').fadeOut(1000);"></div>
 	<div class="alert alert-block" id="message_q" style="display:none" onclick="$('#message_q').fadeOut(1000);"></div>
@@ -93,7 +36,7 @@ $times = getTimes();
 			<div class="background_block"></div>
 			<div class="cal_header">
 
-				<?
+				<?php
 				$var_ids = '';
 				$ix = 1;
 				foreach ($day_schedule->result() as $item) {
