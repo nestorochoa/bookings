@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@ochoa/atoms": ["libs/atoms/src/index.ts"]
+      "@ochoa/atoms": ["libs/atoms/src/index.ts"],
+      "@ochoa/molecules": ["libs/molecules/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

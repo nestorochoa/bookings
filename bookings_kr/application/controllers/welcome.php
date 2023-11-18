@@ -40,10 +40,12 @@ class Welcome extends CI_Controller
 			$this->load->helper('mysqli');
 			$user_type = $this->session->userdata('user_type');
 
-			$this->basic_var['recordset_menu'] = $this->db
-				->join('user_access', 'id_menu like concat(menu_id, "%")', 'left')
-				->order_by('id_menu', 'asc')
-				->where('user_type', $user_type)->get('Menu')->result();
+			// $this->basic_var['recordset_menu'] = $this->db
+			// 	->join('user_access', 'id_menu like concat(menu_id, "%")', 'left')
+			// 	->order_by('id_menu', 'asc')
+			// 	->where('user_type', $user_type)->get('Menu')->result();
+
+			$this->basic_var['recordset_menu'] = $this->model_procedure->menu_user_type($user_type);
 		}
 	}
 
@@ -375,7 +377,6 @@ class Welcome extends CI_Controller
 		$password = $this->input->post('password');
 		$coupon = $this->input->post('coupon');
 		$error = 1;
-		CRYPT_BLOWFISH or die('No Blowfish found.');
 
 		$this->session->set_flashdata('warning', 'Your email address or password is incorrect. Please check the details entered and try again.');
 		$this->db->where('usr_email', $username);
@@ -385,9 +386,7 @@ class Welcome extends CI_Controller
 		$row = $res->row();
 
 		if (isset($row->usr_pass)) {
-
-
-			if ($this->passwordhash->CheckPassword($password, $row->usr_pass)) {
+			if (password_verify($password, $row->usr_pass)) {
 				$error = 0;
 				$new_session = array(
 					'user_type' => $row->usr_type,
@@ -521,7 +520,6 @@ class Welcome extends CI_Controller
 			$data_mem = array(
 				'mem_type' => $type,
 				'mem_name' => $mem_name,
-
 			);
 
 			$data['mem_gen'] = $data_mem;
@@ -530,8 +528,6 @@ class Welcome extends CI_Controller
 			$this->db->where('usr_id', $id);
 			$temp_t = $this->db->get('bk_users');
 			$res = $temp_t->result();
-
-
 
 			if ($res) {
 				$row = $res[0];
@@ -542,7 +538,7 @@ class Welcome extends CI_Controller
 					'email' => $row->usr_email,
 					'f_phone' => $row->usr_phone_main,
 					's_phone' => $row->usr_phone_sec,
-					'username' => $row->usr_username,
+					'username' => $row->usr_username
 				);
 
 				if ($type == 4) {
@@ -557,6 +553,7 @@ class Welcome extends CI_Controller
 						$user_info['special'] = isset($query_r->st_special) ? $query_r->st_special : '';
 						$user_info['pm'] = isset($query_r->st_payment_m) ? $query_r->st_payment_m : '';
 						$user_info['price'] = isset($query_r->usr_price) ? $query_r->price : '';
+						$user_info['usr_sport'] = isset($query_r->usr_sport) ? $query_r->usr_sport : '';
 					}
 				}
 				$data['user_info'] = $user_info;
@@ -576,7 +573,8 @@ class Welcome extends CI_Controller
 						'persons' => '',
 						'special' => '',
 						'pm' => '',
-						'price' => ''
+						'price' => '',
+						'usr_sport' => ''
 					);
 
 					if ($this->input->post("from_bookings") == 1) {
@@ -590,6 +588,7 @@ class Welcome extends CI_Controller
 			}
 
 			$data['level_query'] = $this->db->get('student_level');
+			$data['sport_types'] = $this->db->get('TypeLessons');
 
 
 			$this->load->view('users_detail', $data);
@@ -643,7 +642,7 @@ class Welcome extends CI_Controller
 
 			if ($this->input->post('password') != '') {
 				$this->load->library('PasswordHash');
-				$new_data['usr_pass'] = $this->passwordhash->HashPassword($this->input->post('password'));
+				$new_data['usr_pass'] = password_hash($this->input->post('password'), PASSWORD_BCRYPT);
 			} elseif ($id == 'New') {
 				$this->load->library('PasswordHash');
 				$a = '';
@@ -656,7 +655,7 @@ class Welcome extends CI_Controller
 				$to = $this->input->post('edit_email');
 				$message = '<h2>New Password is </h2><br/>' . $a;
 				send_email($from, $subject, $message, $to);
-				$new_data['usr_pass'] = $this->passwordhash->HashPassword($a);
+				$new_data['usr_pass'] = password_hash($a, PASSWORD_BCRYPT);
 			}
 
 
@@ -2699,7 +2698,7 @@ class Welcome extends CI_Controller
 
 			$a = strtolower($pp->usr_name) . '123';
 
-			$new_data['usr_pass'] = $this->passwordhash->HashPassword($a);
+			$new_data['usr_pass'] = password_hash($a, PASSWORD_BCRYPT);
 
 			$this->db->where('usr_id', $pp->usr_id);
 			$this->db->update('bk_users', $new_data);
@@ -2800,12 +2799,12 @@ class Welcome extends CI_Controller
 
 								if ($this->input->post('password') != '') {
 									$this->load->library('PasswordHash');
-									$new_data['usr_pass'] = $this->passwordhash->HashPassword($this->input->post('password'));
+									$new_data['usr_pass'] = password_hash($this->input->post('password'), PASSWORD_BCRYPT);
 									$a = $this->input->post('password');
 								} else {
 									$this->load->library('PasswordHash');
 									$a = strtolower($this->input->post('edit_name')) . '123';
-									$new_data['usr_pass'] = $this->passwordhash->HashPassword($a);
+									$new_data['usr_pass'] = password_hash($a, PASSWORD_BCRYPT);
 								}
 
 								$this->load->helper('misc');
@@ -2969,14 +2968,14 @@ class Welcome extends CI_Controller
 
 								if ($this->input->post('password') != '') {
 									$this->load->library('PasswordHash');
-									$new_data['usr_pass'] = $this->passwordhash->HashPassword($this->input->post('password'));
+									$new_data['usr_pass'] = password_hash($this->input->post('password'), PASSWORD_BCRYPT);
 									$a = $this->input->post('password');
 								} else {
 									$this->load->library('PasswordHash');
 									$a = strtolower($this->input->post('edit_name')) . '123';
 
 
-									$new_data['usr_pass'] = $this->passwordhash->HashPassword($a);
+									$new_data['usr_pass'] = password_hash($a, PASSWORD_BCRYPT);
 								}
 
 								$this->load->helper('misc');

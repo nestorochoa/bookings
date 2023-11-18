@@ -74,6 +74,6 @@ $route['coupon_list'] = "voucher/coupon_list";
 $route['voucher_details/(:any)'] = "voucher/voucher_details/$0";
 $route['student_details/(:any)'] = "reports/student_info/$0";
 
-
+$route['sms_templates'] = "sms/sms_templates";
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */

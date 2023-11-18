@@ -1,3 +1,6 @@
-.table [class^="icon-"]{
-
+.special-ta .input-group-text {
+  width: 200px;
+  text-wrap: pretty;
+  text-align: left;
+  min-height: 6rem;
 }

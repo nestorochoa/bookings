@@ -2,7 +2,7 @@
 	.ui-resizable-s {
 		bottom: 0;
 		height: 30px;
-		//background-color:#359AF7;
+
 	}
 </style>
 
@@ -10,8 +10,8 @@
 	var formatDate = (dateTransform) => {
 		return `${dateTransform.getFullYear()}-${dateTransform.getMonth()}-${dateTransform.getDate()}`
 	}
-	var general_date = '<?echo $day_sel?>';
-	var freeDates = JSON.parse('<?echo $freeDates?>').map((elm) => {
+	var general_date = '<? echo $day_sel ?>';
+	var freeDates = JSON.parse('<? echo $freeDates ?>').map((elm) => {
 		elm.realDate = new Date(elm.bd_date)
 		return elm
 	});
@@ -21,7 +21,7 @@
 	$(function() {
 
 		$("#datepicker_container div").data({
-			date: '<?echo $day_sel?>'
+			date: '<? echo $day_sel ?>'
 		})
 		$("#datepicker_container div").datepicker({
 			format: "dd/mm/yyyy",
@@ -62,35 +62,35 @@
 
 </style>
 
-<form id="form_post" method="post" action="<?echo base_url() ?>bookings">
+<form id="form_post" method="post" action="<? echo base_url() ?>bookings">
 	<input type="hidden" id="date_sel" name="date_sel" value="" />
 </form>
 
 <?
-	if($day_schedule->num_rows()>0){
+if ($day_schedule->num_rows() > 0) {
 ?>
-<? include('calendar.inc.php');?>
+	<? include('calendar.inc.php'); ?>
 
-<?}else{?>
-<div class="alert alert-error" id="alert">
-	<strong>There is no instructors assigned to this date. Please assign one.</strong>
-</div>
-<div class="btn-group">
-	<form id="add_column" name="add_column" method="post" action="<?echo base_url() ?>bookings">
-		<input type="hidden" id="add_ins" name="add_ins" value="1" />
-		<input type="hidden" id="date_sel" name="date_sel" value="<? echo $this->input->post('date_sel')?>" />
-		<input type="hidden" id="del_ins" name="del_ins" value="" />
-		<input type="hidden" id="col_id" name="col_id" value="" />
-		<button class="btn  btn-success" type="submit">Add Instructor</button>
-	</form>
-</div>
-<div class="wishlist_container">
-	<div id="datepicker_container">
-		<div></div>
+<? } else { ?>
+	<div class="alert alert-error" id="alert">
+		<strong>There is no instructors assigned to this date. Please assign one.</strong>
 	</div>
-</div>
-</div>
-<?}?>
+	<div class="btn-group">
+		<form id="add_column" name="add_column" method="post" action="<? echo base_url() ?>bookings">
+			<input type="hidden" id="add_ins" name="add_ins" value="1" />
+			<input type="hidden" id="date_sel" name="date_sel" value="<? echo $this->input->post('date_sel') ?>" />
+			<input type="hidden" id="del_ins" name="del_ins" value="" />
+			<input type="hidden" id="col_id" name="col_id" value="" />
+			<button class="btn btn-success" type="submit">Add Instructor</button>
+		</form>
+	</div>
+	<div class="wishlist_container">
+		<div id="datepicker_container">
+			<div></div>
+		</div>
+	</div>
+	</div>
+<? } ?>
 
 
 
@@ -101,9 +101,9 @@
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 				<h4 class="modal-title">Add available lessons</h4>
 			</div>
-			<form id="add_lessons" method="post" action="<?echo base_url()?>welcome/add_lessons" />
+			<form id="add_lessons" method="post" action="<? echo base_url() ?>welcome/add_lessons" />
 			<div class="modal-body" style="text-align:center">
-				<? include ('assign_days.inc.php')?>
+				<? include('assign_days.inc.php') ?>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

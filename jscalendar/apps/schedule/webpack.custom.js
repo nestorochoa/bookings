@@ -1,8 +1,13 @@
 module.exports = (config, context) => {
+  console.log(context);
   const temp = {
-    entry: { test: ['/standalone.tsx'], ...config.entry },
     ...config,
+    entry: {
+      ...{
+        test: [`${context.context.root}/apps/schedule/src/sche/booking.tsx`],
+      },
+      ...config.entry,
+    },
   };
-  console.log(temp.entry);
   return temp;
 };
