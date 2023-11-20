@@ -7,13 +7,25 @@ const StyledApp = styled.div`
 `;
 
 export function App() {
-  const { data, error, isLoading } = useGetInit(environment.apiUrl);
+  const {
+    data,
+    error,
+    isLoading,
+    wishlist,
+    setDate,
+    addInstructor,
+    dayEvents,
+  } = useGetInit(environment.apiUrl);
 
   console.log(data, error, isLoading);
   return (
     <StyledApp>
       {!isLoading && (
-        <BookingsManager config={{}} data={data}></BookingsManager>
+        <BookingsManager
+          data={data}
+          dayEvents={dayEvents}
+          {...{ wishlist, setDate, addInstructor }}
+        ></BookingsManager>
       )}
     </StyledApp>
   );

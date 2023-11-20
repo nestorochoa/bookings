@@ -1,5 +1,5 @@
 import { addDays, getWeek, parse } from 'date-fns';
-import { useState, useCallback, Dispatch, SetStateAction } from 'react';
+import { useState, Dispatch, SetStateAction } from 'react';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface UseGetDates {
@@ -23,7 +23,6 @@ export function useGetDates(): UseGetDates {
 
   const goBack = () => {
     const newWeek = week - 1;
-    console.log('goBack', newWeek);
     if (newWeek < 1) {
       setYear(year - 1);
       setWeek(51);
@@ -34,7 +33,6 @@ export function useGetDates(): UseGetDates {
 
   const goAhead = () => {
     const newWeek = week + 1;
-    console.log('goAhead', newWeek);
     if (newWeek > 51) {
       setYear(year + 1);
       setWeek(1);

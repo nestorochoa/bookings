@@ -7,6 +7,14 @@ class Bookings extends CI_Controller
   public function __construct()
   {
     parent::__construct();
+    // if (!$this->session->userdata('user_id')) {
+    //   header("content-type: application/json");
+    //   $json["error"] = 403;
+    //   $json["message"] = 'NOT AUTH';
+    //   print json_encode($json);
+    // }
+    header("Access-Control-Allow-Origin: *");
+    header("Access-Control-Allow-Headers: *");
   }
   public function init()
   {
@@ -64,31 +72,193 @@ class Bookings extends CI_Controller
       }
     }
 
-    $this->db->where('usr_type', '3');
-    $this->db->order_by('usr_name', 'asc');
-    $this->db->order_by('usr_surname', 'asc');
+    $data['instructors'] = $this->db->where('usr_type', '3')
+      ->order_by('usr_name', 'asc')
+      ->order_by('usr_surname', 'asc')
+      ->get('bk_users')->result();
 
-    $data['instructors'] = $this->db->get('bk_users');
 
-    $this->db->where('bd_date', $current_date);
-    $this->db->where('(bd_inactive != 1 OR bd_inactive is NULL)');
-    $this->db->join('bk_users', 'usr_id = bd_instructor', 'left');
 
-    $data['day_schedule'] = $this->db->get('bk_day_groups');
+    $data['day_schedule'] = $this->db->where('bd_date', $current_date)
+      ->where('(bd_inactive != 1 OR bd_inactive is NULL)')
+      ->join('bk_users', 'usr_id = bd_instructor', 'left')
+      ->get('bk_day_groups')->result();
 
-    $data['select_booking_types'] = $this->db->get('booking_type');
-    $data['select_student_level'] = $this->db->get('student_level');
+
+    $data['select_booking_types'] = $this->db->get('booking_type')->result();
+    $data['select_student_level'] = $this->db->get('student_level')->result();
 
     $data['userdata'] = $this->session->all_userdata();
     $data['typeUser'] = $this->session->userdata('user_type');
 
-    header("Access-Control-Allow-Origin: *");
+
     header("content-type: application/json");
     print json_encode($data);
     // } else {
     //   echo "NO AUTH";
     // }
   }
+
+  public function wishlist()
+  {
+    // if ($this->session->userdata('user_id')) { 
+    $date_t = $this->input->post("date_a");
+
+    $date_current = DateTime::createFromFormat('d/m/Y', $date_t);
+
+
+    $date_correct_sql = $date_current->format('Y-m-d');
+
+    $this->load->helper('misc');
+    $events = array();
+
+
+    $query_wishlist = 'Select Max(bk_id) bk_id ,Max(bk_group) bk_group,bk_level,bk_special_num,bk_status,
+				bk_student,Max(bk_cancel_manager) bk_cancel_manager, cancel_count bk_cancel_count, 
+				bd_date,bd_id,bd_inactive, bd_instructor,If("' . $date_correct_sql . '" = bd_date,1,0) as current,
+				hour_from,hour_to, usr_name,usr_surname,st_n_students,usr_phone_main,sl_description,bk_obs,bt_description,st_observations
+				From bk_days
+				Inner Join
+				(Select bk_student student ,sum(bk_cancel_count) cancel_count From bk_days where bk_status = 1 and bk_student != 0 group by bk_student) sel_table On student = bk_student
+				
+				Inner Join bk_day_groups On bd_id = bk_group
+				Inner Join bk_users On usr_id = student
+				Inner Join student_details On st_id = student
+				Left Join student_level On sl_id = st_level
+				Left Join booking_type On bt_id = bk_level
+				Where bk_status = 1
+				Group by bk_level,bk_special_num,bk_status,bk_student
+				Union 
+				Select bk_id,bk_group,bk_level,bk_special_num,bk_status,bk_student,bk_cancel_manager, 
+				bk_cancel_count,bd_date,bd_id,bd_inactive,bd_instructor,If("' . $date_correct_sql . '" = bd_date,1,0) as current,
+				hour_from,hour_to,NULL as usr_name,NULL as usr_surname,NULL as st_n_students,NULL as usr_phone_main,NULL as sl_description, bk_obs,NULL,NULL
+				
+				From bk_days
+				Inner Join bk_day_groups On bd_id = bk_group
+				Where bk_status =1 and bk_level = 3 and exists (Select * From special_group where sg_day = bk_id)
+				Order by bk_cancel_manager desc';
+
+    $query = $this->db->query($query_wishlist);
+
+
+    if ($query->num_rows() > 0) {
+
+      foreach ($query->result() as $q_row) {
+        $jsonEvent = array();
+        $jsonEvent["id"] = $q_row->bk_id;
+        $jsonEvent["start_time"] = $q_row->hour_from;
+        $jsonEvent["end_time"] = $q_row->hour_to;
+        $jsonEvent["time_description"] = formatDescriptiveTimes($q_row->hour_from, $q_row->hour_to);
+        $jsonEvent["minutes"] = getTimeDuration("08:00:00", $q_row->hour_from);
+        $jsonEvent["duration"] = getTimeDuration($q_row->hour_from, $q_row->hour_to);
+        $jsonEvent["bk_level"] = $q_row->bk_level;
+        $jsonEvent['student'] = '';
+        $jsonEvent['obs'] = '';
+        $jsonEvent['hl'] = '';
+        $jsonEvent['special'] = array();
+        $jsonEvent['count_cancel'] = $q_row->bk_cancel_count;
+        $jsonEvent['current'] = $q_row->current;
+        /*$this->db->where('bt_id',$q_row->bk_level);
+						$q_l = $this->db->get('booking_type');
+		
+						$query_l = $q_l->row();*/
+        $jsonEvent["level"] = $q_row->bt_description;
+
+        if ($q_row->bk_level == 1) {
+
+          /*
+							
+							$this->db->where('usr_id',$q_row->bk_student);
+							$this->db->join('student_details','st_id = usr_id');
+							$this->db->join('student_level','sl_id = st_level','left');
+							$q_r = $this->db->get('bk_users');
+							$query_r = $q_r->row();*/
+
+          $jsonEvent['student'] = @$q_row->bk_student;
+          $jsonEvent['student_name'] = @$q_row->usr_name . ' ' . @$q_row->usr_surname;
+          if (isset($q_row->st_n_students) && $q_row->st_n_students > 1) {
+            $jsonEvent['student_name'] .= ' (+' . (@$q_row->st_n_students - 1) . ' )';
+          }
+          $jsonEvent['student_mobile'] =  @$q_row->usr_phone_main;
+          $jsonEvent['obs'] = @$q_row->st_observations;
+          $jsonEvent['hl'] = @$this->cal_hours_left_total($q_row->bk_student);
+          $jsonEvent["level"] = @$q_row->sl_description;
+        } else {
+          if (isset($q_row->bk_obs)) {
+            $jsonEvent['obs'] = $q_row->bk_obs;
+          } else {
+            $jsonEvent['obs'] = '';
+          }
+        }
+
+        if ($q_row->bk_level == 3) {
+          $where_s = 'sg_day = ' . $q_row->bk_id . ' AND sg_status in(0,3)';
+          $this->db->where($where_s, null, false);
+          $this->db->join('bk_users', 'usr_id = sg_student');
+          $this->db->join('student_details', 'usr_id = st_id');
+          $this->db->join('student_level', 'st_level = sl_id');
+          $this->db->select('usr_name,usr_surname,usr_phone_main,usr_id,st_n_students,sl_description');
+          $group_q = $this->db->get('special_group');
+
+          foreach ($group_q->result() as $res) {
+
+            $jsonEvent["level"] = $res->sl_description . ' (Sp)';
+
+            $jsonEvent['special'][] = array(
+              'name' => $res->usr_name . ' ' . $res->usr_surname,
+              'phone' => $res->usr_phone_main,
+              'usr_id' => $res->usr_id,
+              'number' => $res->st_n_students,
+            );
+          }
+        }
+
+        /*
+					if($q_row->bk_level == 2){
+						$this->db->where('es_id', $q_row->bk_lesson_level);
+						$query_desc = $this->db->get('extra_status');
+						if($query_desc->num_rows() > 0){
+							$row = $query_desc->row(); 
+							$jsonEvent["level"] = $row->es_description;
+						}
+						
+					}
+					*/
+
+        $jsonEvent["group"] = $q_row->bk_group;
+
+        $events[] = $jsonEvent;
+      }
+    }
+
+
+    $json["events"] = $events;
+    $json["rc"] = 0;
+    header("content-type: application/json");
+    print json_encode($json);
+    // } else {
+    //   header("content-type: application/json");
+    //   $json["rc"] = 99;
+    //   print json_encode($json);
+    // }
+  }
+
+  public function cal_hours_left_total($student)
+  {
+    $query_special = "SELECT st_hours - (SUM(IF(bk_status = 3, TIME_TO_SEC( TIMEDIFF( hour_to, hour_from ) ) / ( 60 *60 )     ,0)) + SUM(IF( bk_status = 0,TIME_TO_SEC( TIMEDIFF( hour_to, hour_from ) )  / ( 60 *60 ),0))) - st_penalty as count
+			FROM bk_day_groups
+			INNER JOIN bk_days ON bk_group = bd_id
+			LEFT JOIN special_group ON sg_day = bk_id And sg_status = 0
+			LEFT JOIN student_details On st_id = IFNULL(sg_student,bk_student)
+			WHERE bd_inactive IS NULL 
+			AND ( sg_student = " . $student . " OR bk_student = " . $student . ")";
+    $res = $this->db->query($query_special);
+    //echo $this->db->last_query();	
+    $res_f = $res->row();
+
+    return isset($res_f->count) ? $res_f->count  : 0;
+  }
+
 
   private function freeDate($year, $month)
   {
@@ -108,5 +278,135 @@ class Bookings extends CI_Controller
     }
 
     return json_encode($data['result']);
+  }
+
+  public function json_event()
+  {
+    // if ($this->session->userdata('user_id')) {
+    $id_chain = $this->input->post('id_chain');
+
+    if ($id_chain == '') {
+      $id_chain = $this->input->get('id_chain');
+    }
+
+    $this->load->helper('misc');
+    //$main_events_id = explode(',',$id_chain);
+    $events = array();
+    //var_dump($main_events_id);
+
+
+
+    $where_c = ' bk_group IN (' . $id_chain . ') AND bk_status IN (0,3) '; //Only the Ones without Cancel or Deleted
+    $this->db->where($where_c, null, false);
+    $this->db->join('booking_type', 'bt_id = bk_level', 'left');
+    $this->db->join('bk_users', 'usr_id = bk_student', 'left');
+    $this->db->join('student_details', 'st_id = usr_id', 'left');
+    $this->db->join('student_level', 'sl_id = IFNULL(bk_lesson_level,st_level)', 'left');
+    $query = $this->db->get('bk_days');
+
+    // $json['temp'] = $this->db->last_query();
+    if ($query->num_rows() > 0) {
+
+      foreach ($query->result() as $q_row) {
+        $jsonEvent = array();
+        $jsonEvent["id"] = $q_row->bk_id;
+        $jsonEvent["start_time"] = $q_row->hour_from;
+        $jsonEvent["end_time"] = $q_row->hour_to;
+        $jsonEvent["time_description"] = formatDescriptiveTimes($q_row->hour_from, $q_row->hour_to);
+        $jsonEvent["minutes"] = getTimeDuration("08:00:00", $q_row->hour_from);
+        $jsonEvent["duration"] = getTimeDuration($q_row->hour_from, $q_row->hour_to);
+        $jsonEvent["bk_level"] = $q_row->bk_level;
+        $jsonEvent["status"] = $q_row->bk_status;
+        $jsonEvent['student'] = '';
+        $jsonEvent['obs'] = '';
+        $jsonEvent['hl'] = '';
+        $jsonEvent['count_cancel'] = $q_row->bk_cancel_count;
+        $jsonEvent['special'] = array();
+        $jsonEvent["level"] = $q_row->bt_description == '' ? '1' : $q_row->bt_description;
+
+        if ($q_row->bk_level == 1) {
+
+
+          $jsonEvent['student'] = @$q_row->bk_student;
+          $jsonEvent['student_name'] = @$q_row->usr_name . ' ' . @$q_row->usr_surname;
+          if (@$q_row->st_n_students > 1) {
+            $jsonEvent['student_name'] .= ' (+' . (@$q_row->st_n_students - 1) . ' )';
+          }
+
+
+          $jsonEvent['student_mobile'] =  @$q_row->usr_phone_main;
+          $jsonEvent['obs'] = @$q_row->st_observations;
+          $jsonEvent['hl'] = $this->cal_hours_left_total(@$q_row->bk_student);
+          $jsonEvent["level"] = @$q_row->sl_description;
+
+          if ($q_row->bk_status == 3 && $q_row->bk_lesson_level != '') {
+
+            $jsonEvent["level"] = $q_row->sl_description;
+          }
+        }
+
+
+        if ($q_row->bk_level == 2) {
+          $this->db->where('es_id', $q_row->bk_lesson_level);
+          $query_desc = $this->db->get('extra_status');
+          if ($query_desc->num_rows() > 0) {
+            $row = $query_desc->row();
+            $jsonEvent["level"] = $row->es_description;
+          }
+          $jsonEvent['obs'] = $q_row->bk_obs;
+        }
+
+        if ($q_row->bk_level == 3) {
+
+          $jsonEvent['obs'] = $q_row->bk_obs;
+
+          $where_s = 'sg_day = ' . $q_row->bk_id . ' AND sg_status in(0,3)';
+          $this->db->where($where_s, null, false);
+          $this->db->join('bk_users', 'usr_id = sg_student');
+          $this->db->join('student_details', 'usr_id = st_id');
+          $this->db->join('student_level', 'st_level = sl_id', 'left'); // Some Student with level issues
+          $group_q = $this->db->get('special_group');
+          $level_desc = '';
+
+
+          if ($q_row->bk_lesson_level != '') {
+            $this->db->where('sl_id', $q_row->bk_lesson_level);
+            $level_d = $this->db->get('student_level');
+            $level_r = $level_d->row();
+            $level_desc =  $level_r->sl_description;
+          }
+
+          foreach ($group_q->result() as $res) {
+            $jsonEvent["level"] = $res->sl_description . ' (Sp)';
+
+            $jsonEvent['special'][] = array(
+              'name' => $res->usr_name . ' ' . $res->usr_surname,
+              'phone' => $res->usr_phone_main,
+              'usr_id' => $res->usr_id,
+              'number' => $res->st_n_students,
+
+            );
+          }
+
+          if ($q_row->bk_lesson_level != '') {
+            $jsonEvent["level"] = $level_desc  . ' (Sp)';
+          }
+        }
+
+        $jsonEvent["group"] = $q_row->bk_group;
+        $events[] = $jsonEvent;
+      }
+    }
+
+
+    $json["events"] = $events;
+    $json["rc"] = 0;
+    header("content-type: application/json");
+    print json_encode($json);
+    // } else {
+    //   header("content-type: application/json");
+    //   $json["rc"] = 99;
+    //   print json_encode($json);
+    // }
   }
 }
