@@ -49,15 +49,20 @@ const hours = [
 export interface BoardSpaceProps {
   children?: ReactNode;
   date: Date;
+  id?: string;
 }
 
-export const BoardSpace: FC<BoardSpaceProps> = ({ date }) => {
+export const BoardSpace: FC<BoardSpaceProps> = ({ date, id }) => {
   const [{ isOver, canDrop }, drop] = useDrop(() => ({
     accept: ItemTypes.LESSON,
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
       canDrop: !!monitor.canDrop(),
     }),
+    drop: (item, monitor) => {
+      console.log(item, monitor, 'On DROP');
+      return { date, id };
+    },
   }));
 
   return <StyledSpace ref={drop} {...{ isOver }}></StyledSpace>;
@@ -79,7 +84,11 @@ export const GridSpace: FC<GridProps> = ({ description, date, id }) => {
             );
 
             return (
-              <BoardSpace key={`desc-1-${elm}`} date={slotDate}></BoardSpace>
+              <BoardSpace
+                key={`desc-1-${elm}`}
+                date={slotDate}
+                id={id}
+              ></BoardSpace>
             );
           })
         )

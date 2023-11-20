@@ -8,23 +8,36 @@ const StyledApp = styled.div`
 
 export function App() {
   const {
-    data,
     error,
     isLoading,
-    wishlist,
     setDate,
+    wishlist,
     addInstructor,
     dayEvents,
+    date,
+    dateParsed,
+    freeDatesCalendar,
+    day_schedule,
+    instructors,
+    reloadData,
   } = useGetInit(environment.apiUrl);
 
-  console.log(data, error, isLoading);
   return (
     <StyledApp>
       {!isLoading && (
         <BookingsManager
-          data={data}
-          dayEvents={dayEvents}
-          {...{ wishlist, setDate, addInstructor }}
+          {...{
+            wishlist,
+            setDate,
+            addInstructor,
+            date,
+            dayEvents,
+            dateParsed,
+            freeDatesCalendar,
+            day_schedule,
+            instructors,
+            reloadData,
+          }}
         ></BookingsManager>
       )}
     </StyledApp>

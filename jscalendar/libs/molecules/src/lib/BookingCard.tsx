@@ -106,11 +106,18 @@ export const BookingCard: FC<BookCardProps> = (props) => {
   } = props;
   const topPosition = generalSettings.getPositionInRem(start_time);
 
-  const [{ isDragging }, drag] = useDrag(() => ({
+  const [{ isDragging }, drag, dragPreview] = useDrag(() => ({
     type: ItemTypes.LESSON,
+    item: props,
+
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
+    end: (item, monitor) => {
+      if (monitor.didDrop()) {
+        console.log(monitor.getDropResult());
+      }
+    },
   }));
 
   return (

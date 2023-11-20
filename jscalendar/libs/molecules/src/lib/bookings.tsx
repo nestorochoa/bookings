@@ -1,4 +1,4 @@
-import { FC, useReducer } from 'react';
+import { FC, createContext, useReducer } from 'react';
 import { Calendar } from 'react-modern-calendar-datepicker';
 import styled from 'styled-components';
 import 'react-modern-calendar-datepicker/lib/DatePicker.css';
@@ -8,15 +8,39 @@ import { Toolbar } from './Toolbar';
 import { Board } from './Board';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { User } from './general';
+import { BookingProvider } from './bookingContext';
 
-import { bookingReducer } from './bookingContext';
 /* eslint-disable-next-line */
+
+export interface FreeDates {
+  bd_date: string | Date;
+  available: string | boolean;
+}
+
+export interface DaySchedule {
+  bd_date: string | Date;
+  bd_id: string | number;
+}
+
+export interface DataInit {
+  day_sel: string;
+  freeDates: Array<FreeDates>;
+  day_schedule: Array<DaySchedule>;
+  instructors: Array<User>;
+}
+
 export interface BookingProps {
-  data: any;
+  date: any;
   wishlist: Array<any>;
   setDate: any;
   addInstructor: any;
   dayEvents: Array<any>;
+  dateParsed: any;
+  freeDatesCalendar: Array<any>;
+  day_schedule: Array<any>;
+  instructors: Array<any>;
+  reloadData: any;
 }
 
 const StyledContainer = styled.div`
@@ -75,43 +99,56 @@ const StyledContainer = styled.div`
   }
 `;
 
+export const GlobalBookingContext = createContext<{
+  reloadData: any;
+  day_schedule: any[];
+  dayEvents: any[];
+  wishlist: any[];
+}>({});
+
 export const BookingsManager: FC<BookingProps> = ({
-  data,
+  date,
   wishlist,
   addInstructor,
   setDate,
   dayEvents,
+  dateParsed,
+  freeDatesCalendar,
+  day_schedule,
+  instructors,
+  reloadData,
 }) => {
-  const { date, freeDates, day_schedule, instructors } = data;
-  console.log(date, 'date');
-  // eslint-disabl  e-next-line @typescript-eslint/no-unused-vars
-  const [bookings, dispatch] = useReducer(bookingReducer, day_schedule);
-
   return (
     <StyledContainer>
-      <DndProvider backend={HTML5Backend}>
-        <Toolbar
-          instructors={day_schedule}
-          addInstructor={addInstructor}
-          className="top"
-        ></Toolbar>
-        <Board
-          instructors={instructors}
-          days={day_schedule}
-          dayEvents={dayEvents}
-          className="left"
-        ></Board>
-        <div className="right">
-          <Calendar
-            shouldHighlightWeekends
-            value={date}
-            onChange={setDate}
-            customDaysClassName={freeDates}
-            calendarClassName="responsive-calendar"
-          />
-          <Wishlist wishlistEvents={wishlist}></Wishlist>
-        </div>
-      </DndProvider>
+      <GlobalBookingContext.Provider
+        value={{ reloadData, day_schedule, dayEvents, wishlist }}
+      >
+        <DndProvider backend={HTML5Backend}>
+          <BookingProvider>
+            <Toolbar
+              instructors={day_schedule}
+              addInstructor={addInstructor}
+              className="top"
+            ></Toolbar>
+            <Board
+              instructors={instructors}
+              days={day_schedule}
+              dayEvents={dayEvents}
+              className="left"
+            ></Board>
+            <div className="right">
+              <Calendar
+                shouldHighlightWeekends
+                value={dateParsed}
+                onChange={setDate}
+                customDaysClassName={freeDatesCalendar}
+                calendarClassName="responsive-calendar"
+              />
+              <Wishlist wishlistEvents={wishlist}></Wishlist>
+            </div>
+          </BookingProvider>
+        </DndProvider>
+      </GlobalBookingContext.Provider>
     </StyledContainer>
   );
 };

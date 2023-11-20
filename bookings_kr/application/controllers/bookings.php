@@ -16,6 +16,20 @@ class Bookings extends CI_Controller
     header("Access-Control-Allow-Origin: *");
     header("Access-Control-Allow-Headers: *");
   }
+
+  public function baseInfo()
+  {
+    $data['instructors'] = $this->db
+      ->where(array('usr_type' => '3', 'usr_deactive !=' => '1'))
+      ->order_by('usr_name asc, usr_surname asc')
+      ->get('bk_users')->result();
+    $data['select_booking_types'] = $this->db->get('booking_type')->result();
+    $data['select_student_level'] = $this->db->get('student_level')->result();
+
+    header("content-type: application/json");
+    print json_encode($data);
+  }
+
   public function init()
   {
     // if ($this->session->userdata('user_id') && $this->session->userdata('user_type') <= 2) {
@@ -26,8 +40,6 @@ class Bookings extends CI_Controller
       $date_show = $this->input->post('date_sel');
     }
     $data['day_sel'] = $date_show;
-
-
 
     $currentdate = DateTime::createFromFormat('d/m/Y', $date_show);
     $current_date = $currentdate->format('Y-m-d');
@@ -72,23 +84,12 @@ class Bookings extends CI_Controller
       }
     }
 
-    $data['instructors'] = $this->db->where('usr_type', '3')
-      ->order_by('usr_name', 'asc')
-      ->order_by('usr_surname', 'asc')
-      ->get('bk_users')->result();
-
-
-
     $data['day_schedule'] = $this->db->where('bd_date', $current_date)
       ->where('(bd_inactive != 1 OR bd_inactive is NULL)')
       ->join('bk_users', 'usr_id = bd_instructor', 'left')
       ->get('bk_day_groups')->result();
 
 
-    $data['select_booking_types'] = $this->db->get('booking_type')->result();
-    $data['select_student_level'] = $this->db->get('student_level')->result();
-
-    $data['userdata'] = $this->session->all_userdata();
     $data['typeUser'] = $this->session->userdata('user_type');
 
 
@@ -277,7 +278,7 @@ class Bookings extends CI_Controller
       $data['result'] = $result->result();
     }
 
-    return json_encode($data['result']);
+    return  $data['result'];
   }
 
   public function json_event()
@@ -408,5 +409,205 @@ class Bookings extends CI_Controller
     //   $json["rc"] = 99;
     //   print json_encode($json);
     // }
+  }
+
+  public function json_save_lesson()
+  {
+    // if ($this->session->userdata('user_id')) {
+    $type = $this->input->post('type');
+    $id = $this->input->post('id');
+    $minutes = $this->input->post('minutes');
+    $duration =  $this->input->post('duration');
+    $group = $this->input->post('group');
+
+    $student = $this->input->post('student') == 0 ? null : $this->input->post('student');
+
+    $this->load->helper('misc');
+
+
+    $count_errors = 0;
+
+    if ($id != '') {
+      $this->db->where('bk_id', $id);
+      $this->db->where('bk_status', '3');
+      $query_ck = $this->db->get('bk_days');
+      $count_errors = $query_ck->num_rows();
+    }
+
+
+
+    $startTime = getFutureTime("08:00:00", $minutes);
+    $endTime = getFutureTime("08:00:00", ($minutes + $duration));
+
+    $json["level"] = $type;
+    $json["type"] = $type;
+
+
+    $new_data = array(
+      'hour_from' => $startTime,
+      'hour_to' => $endTime,
+      'bk_group' => $group,
+      'bk_level' => $type,
+      'bk_student' => $student
+
+    );
+    // Validate Only Hours for Booking
+    $where_val = " NOT ((hour_from >= Cast('" . $endTime . "' as time) AND hour_to > Cast('" . $endTime . "' as time)) 
+					OR 
+					(hour_from < Cast('" . $startTime . "' as time) AND hour_to <= Cast('" . $startTime . "' as time))) AND bk_group = " . $group;
+    $where_val .= ' AND bk_status In (0,3)  and (bd_inactive != 1 or bd_inactive is null) ';
+    if ($id != '') {
+      $where_val .= " AND bk_id != " . $id;
+    }
+
+
+    $this->db->where($where_val, NULL, false);
+    $this->db->join('bk_day_groups', 'bd_id = bk_group');
+    $query_val = $this->db->get('bk_days');
+
+
+    $number_same = 0;
+
+    if ($student != '' && $type == 1) {
+
+      $this->db->where('bd_id', $group);
+      $date_q = $this->db->get('bk_day_groups');
+      $date_r = $date_q->row();
+
+      $temp_date = $date_r->bd_date;
+
+
+      $where_val = " NOT ((hour_from >= Cast('" . $endTime . "' as time) AND hour_to > Cast('" . $endTime . "' as time)) 
+						OR 
+						(hour_from < Cast('" . $startTime . "' as time) AND hour_to <= Cast('" . $startTime . "' as time))) AND bd_date = '" . $temp_date . "'";
+      $where_val .= ' AND bk_status In (0,3)   and (bd_inactive != 1 or bd_inactive is null) and bk_student = ' . $student;
+      if ($id != '') {
+        $where_val .= " AND bk_id != " . $id;
+      }
+
+      $this->db->where($where_val, NULL, false);
+      $this->db->join('bk_day_groups', 'bd_id = bk_group');
+      $query_val_same = $this->db->get('bk_days');
+      $number_same = $query_val_same->num_rows();
+    }
+
+    if ($query_val->num_rows() + $count_errors + $number_same  > 0) {
+      $json["rc"] = 'Hour overlaping';
+      $json["temp_test"] = $this->db->last_query();
+    } else {
+      if ($id == '') {
+        $new_data['bk_status'] = 0;
+        if ($type == 3) {
+          $new_data['bk_special_num'] = 3;
+          $new_data['bk_lesson_level'] =  $student;
+        }
+        if ($type == 2) {
+          $new_data['bk_lesson_level'] = $student;
+          $new_data['bk_student']  = NULL;
+        }
+
+
+        $this->db->insert('bk_days', $new_data);
+        $json["id"] = $this->db->insert_id();
+      } else {
+
+        $new_data['bk_status'] = 0;
+        $this->db->where('bk_id', $id);
+        $this->db->update('bk_days', $new_data);
+      }
+      if ($this->db->affected_rows()  > 0) {
+        $json["rc"] = 0;
+        $json["time_description"] = formatDescriptiveTimes($startTime, $endTime);
+
+        $this->db->where('bt_id', $type);
+        $q_l = $this->db->get('booking_type');
+        $query_l = $q_l->row();
+        if (isset($query_l->bt_description)) {
+          $json["level_type"] = $query_l->bt_description;
+        } else {
+          $json["level_type"] = 'L1';
+        }
+
+        if ($type == 1) {
+
+
+
+          $this->db->where('usr_id', $student);
+          $this->db->join('student_details', 'st_id = usr_id');
+          $this->db->join('student_level', 'st_level = sl_id', 'left');
+          $q_r = $this->db->get('bk_users');
+
+
+
+
+          $query_r = $q_r->row();
+          $json['student_name'] = $query_r->usr_name . ' ' . $query_r->usr_surname;
+          $json['student_mobile'] = $query_r->usr_phone_main;
+          $json['hl'] = $this->cal_hours_left_total($student);
+
+
+          $json["level_type"] = $query_r->sl_description;
+
+          $this->db->where('bk_student', $student);
+          $this->db->where('bk_status', '1');
+          $this->db->delete('bk_days');
+        }
+
+        if ($type == 2) {
+          $this->db->where('es_id',  $student);
+          $query_desc = $this->db->get('extra_status');
+          if ($query_desc->num_rows() > 0) {
+            $row = $query_desc->row();
+            $json["level_type"] = $row->es_description;
+          }
+        }
+        if ($type == 3) {
+          $id_new = $id != '' ? $id : $json["id"];
+          $new_level_sp = $this->check_special_level($id_new);
+          $json["level_type"] = $new_level_sp['desc'];
+        }
+      } else {
+        $json["rc"] = 'There where no changes';
+      }
+    }
+
+    $array_log = array(
+      'l_user' => $this->session->userdata('user_id'),
+      'l_action' => 4,
+      'l_reference' => '',
+      'l_observations' => 'User Create booking for  :' . $student,
+      'l_student' => $student,
+      'l_date' => date("Y-m-d H:i:s")
+    );
+    $this->db->insert("logs", $array_log);
+
+
+    header("content-type: application/json");
+    print json_encode($json);
+    // } else {
+    // 	header("content-type: application/json");
+    // 	$json["rc"] = 99;
+    // 	print json_encode($json);
+    // }
+  }
+
+
+  private function check_special_level($id_lesson)
+  {
+    $query = 'SELECT sl_id,sl_description FROM `bk_days` Left Join special_group On sg_day = bk_id Left Join student_details On sg_student = st_id Left Join student_level On ifNull(bk_lesson_level,st_level) = sl_id where bk_id = ' . $id_lesson . ' Group By sl_id,sl_description Order By bk_id Desc';
+    $resp = $this->db->query($query);
+    $out = array(
+      'code' => '',
+      'desc' => '(Sp)'
+    );
+    foreach ($resp->result() as $val) {
+      $out['code'] = $val->sl_id;
+      $out['desc'] = $val->sl_description;
+    }
+    $out['desc'] .= '(Sp)';
+    if ($resp->num_rows() > 1) {
+      $out['desc'] .= '*';
+    }
+    return $out;
   }
 }

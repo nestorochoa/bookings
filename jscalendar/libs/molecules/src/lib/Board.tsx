@@ -23,7 +23,12 @@ const ListDraggable = styled.ul`
   padding: 0;
 `;
 
-export const Board: FC<BoardProps> = ({ instructors, days, className }) => {
+export const Board: FC<BoardProps> = ({
+  instructors,
+  days,
+  className,
+  dayEvents,
+}) => {
   return (
     <BoardContainer {...{ className }}>
       {days && days.length > 0 && (
@@ -31,12 +36,16 @@ export const Board: FC<BoardProps> = ({ instructors, days, className }) => {
           <GridSpace description={true} key={`col-desc`}></GridSpace>
           {days.map((day, index) => {
             const { bd_id, bd_date } = day;
-            const events: any[] = []; //dayEvents.filter(())
+            const events = dayEvents.filter((event) => event.group === bd_id);
             return (
               <div>
                 <ListDraggable key={`col-${index}`}>
                   {events.map((event: any, eventIndex: any) => (
-                    <BookingCard {...event} wishlist={false}></BookingCard>
+                    <BookingCard
+                      {...event}
+                      wishlist={false}
+                      key={`bk-${eventIndex}-${index}`}
+                    ></BookingCard>
                   ))}
                   <GridSpace
                     description={false}
