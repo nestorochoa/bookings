@@ -8,36 +8,25 @@ const StyledApp = styled.div`
 
 export function App() {
   const {
-    error,
     isLoading,
-    setDate,
-    wishlist,
-    addInstructor,
-    dayEvents,
-    date,
+    functions,
+    innerLoading,
+    dateString,
+    dayValues,
+    constantValues,
     dateParsed,
-    freeDatesCalendar,
-    day_schedule,
-    instructors,
-    reloadData,
   } = useGetInit(environment.apiUrl);
 
   return (
     <StyledApp>
       {!isLoading && (
         <BookingsManager
-          {...{
-            wishlist,
-            setDate,
-            addInstructor,
-            date,
-            dayEvents,
-            dateParsed,
-            freeDatesCalendar,
-            day_schedule,
-            instructors,
-            reloadData,
-          }}
+          functions={functions}
+          innerLoading={innerLoading}
+          dateString={dateString}
+          dayValues={dayValues}
+          constantValues={constantValues}
+          dateParsed={dateParsed}
         ></BookingsManager>
       )}
     </StyledApp>

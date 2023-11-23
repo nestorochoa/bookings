@@ -7,7 +7,7 @@ import {
   faBackwardStep,
   faForwardStep,
 } from '@fortawesome/free-solid-svg-icons';
-import { GridSpace } from './GridSpace';
+import { GridSpace, GridSpaceDesc } from './GridSpace';
 
 /* eslint-disable-next-line */
 export interface ScheduleProps {}
@@ -108,9 +108,9 @@ export function Schedule(props: ScheduleProps) {
         week={week}
       ></NavDates>
       <StyledSchedule>
-        <GridSpace description={true} key={`grid-base`}></GridSpace>
+        <GridSpaceDesc></GridSpaceDesc>
         {daysWeek.map((day, index) => (
-          <GridSpace description={false} key={`grid-${index}`}></GridSpace>
+          <GridSpace key={`grid-${index}`}></GridSpace>
         ))}
       </StyledSchedule>
     </MainContainer>

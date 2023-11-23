@@ -1,10 +1,11 @@
-import { FC, ReactNode } from 'react';
+import { FC, ReactNode, useContext } from 'react';
 import styled from 'styled-components';
 import { ItemTypes, generalSettings } from './general';
 import { useDrop } from 'react-dnd';
+import { GlobalBookingContext } from './bookings';
+import { useDroppable } from '@dnd-kit/core';
 
 export interface GridProps {
-  description: boolean;
   id?: string;
   date?: string;
 }
@@ -14,7 +15,7 @@ const StyledSpace = styled.div`
   height: ${generalSettings.getHeight};
   border: 1px solid black;
   box-sizing: border-box;
-  ${({ isOver }: { isOver: boolean }) =>
+  ${({ isOver }: { isOver?: boolean }) =>
     isOver &&
     `
     background-color:#feffd4;
@@ -48,51 +49,55 @@ const hours = [
 
 export interface BoardSpaceProps {
   children?: ReactNode;
-  date: Date;
-  id?: string;
+  minutes: number;
+  group?: string;
 }
 
-export const BoardSpace: FC<BoardSpaceProps> = ({ date, id }) => {
-  const [{ isOver, canDrop }, drop] = useDrop(() => ({
-    accept: ItemTypes.LESSON,
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
-      canDrop: !!monitor.canDrop(),
-    }),
-    drop: (item, monitor) => {
-      console.log(item, monitor, 'On DROP');
-      return { date, id };
-    },
-  }));
-
-  return <StyledSpace ref={drop} {...{ isOver }}></StyledSpace>;
+export const BoardSpace: FC<BoardSpaceProps> = ({ minutes, group }) => {
+  return <StyledSpace></StyledSpace>;
 };
 
-export const GridSpace: FC<GridProps> = ({ description, date, id }) => {
+const DayContainer = styled.div`
+  ${({ isOver }: { isOver?: boolean }) => isOver && `background-color:#fcc;`}
+`;
+
+export const GridSpace: FC<GridProps> = ({ date, id }) => {
+  const { isOver, setNodeRef } = useDroppable({
+    id: `droppable-${id}`,
+    data: {
+      date,
+      id,
+    },
+  });
+
+  return (
+    <DayContainer ref={setNodeRef} isOver={isOver}>
+      {hours.map(({ ampm, military }, index) =>
+        [...Array(4).keys()].map((elm) => {
+          const base = index * 60;
+          const minutes = base + 15 * elm;
+
+          return (
+            <BoardSpace
+              key={`desc-1-${elm}`}
+              minutes={minutes}
+              group={id}
+            ></BoardSpace>
+          );
+        })
+      )}
+    </DayContainer>
+  );
+};
+
+export const GridSpaceDesc: FC = () => {
   return (
     <div>
-      {hours.map(({ ampm, military }, index) =>
-        description ? (
-          <StyledSpaceDescription key={`desc-rr-${index}`}>
-            {ampm}
-          </StyledSpaceDescription>
-        ) : (
-          [...Array(4).keys()].map((elm) => {
-            const slotDate = new Date(
-              new Date(`${date} ${military}`).getTime() +
-                generalSettings.measure15minutes * elm
-            );
-
-            return (
-              <BoardSpace
-                key={`desc-1-${elm}`}
-                date={slotDate}
-                id={id}
-              ></BoardSpace>
-            );
-          })
-        )
-      )}
+      {hours.map(({ ampm }, index) => (
+        <StyledSpaceDescription key={`desc-rr-${index}`}>
+          {ampm}
+        </StyledSpaceDescription>
+      ))}
     </div>
   );
 };

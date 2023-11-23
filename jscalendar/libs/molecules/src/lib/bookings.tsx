@@ -1,4 +1,4 @@
-import { FC, createContext, useReducer } from 'react';
+import { FC, createContext, useState } from 'react';
 import { Calendar } from 'react-modern-calendar-datepicker';
 import styled from 'styled-components';
 import 'react-modern-calendar-datepicker/lib/DatePicker.css';
@@ -6,42 +6,18 @@ import 'react-modern-calendar-datepicker/lib/DatePicker.css';
 import { Wishlist } from './Wishlist';
 import { Toolbar } from './Toolbar';
 import { Board } from './Board';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { User } from './general';
-import { BookingProvider } from './bookingContext';
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  MeasuringConfiguration,
+} from '@dnd-kit/core';
 
-/* eslint-disable-next-line */
-
-export interface FreeDates {
-  bd_date: string | Date;
-  available: string | boolean;
-}
-
-export interface DaySchedule {
-  bd_date: string | Date;
-  bd_id: string | number;
-}
-
-export interface DataInit {
-  day_sel: string;
-  freeDates: Array<FreeDates>;
-  day_schedule: Array<DaySchedule>;
-  instructors: Array<User>;
-}
-
-export interface BookingProps {
-  date: any;
-  wishlist: Array<any>;
-  setDate: any;
-  addInstructor: any;
-  dayEvents: Array<any>;
-  dateParsed: any;
-  freeDatesCalendar: Array<any>;
-  day_schedule: Array<any>;
-  instructors: Array<any>;
-  reloadData: any;
-}
+import { BookingProps, Event } from './types';
+import { CircularProgress, Modal } from '@mui/joy';
+import { snapTopCenterCursor } from './ModifiersDrag';
+import { BookingCard } from './BookingCard';
 
 const StyledContainer = styled.div`
   @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
@@ -99,55 +75,103 @@ const StyledContainer = styled.div`
   }
 `;
 
-export const GlobalBookingContext = createContext<{
-  reloadData: any;
-  day_schedule: any[];
-  dayEvents: any[];
-  wishlist: any[];
-}>({});
+export const GlobalBookingContext = createContext<any>({});
 
-export const BookingsManager: FC<BookingProps> = ({
-  date,
-  wishlist,
-  addInstructor,
-  setDate,
-  dayEvents,
-  dateParsed,
-  freeDatesCalendar,
-  day_schedule,
-  instructors,
-  reloadData,
-}) => {
+export const BookingsManager: FC<BookingProps> = (props) => {
+  const [activeItem, setActive] = useState<any>();
+
+  const {
+    dayValues: { day_schedule, dayEvents, freeDatesCalendar, wishlist },
+    dateParsed,
+    constantValues: { instructors },
+    functions: { setDate, addInstructor, reloadData, updateEvent },
+    innerLoading,
+  } = props;
+
+  const monitorDrag: {
+    // id?: string;
+    // accessibility?: {
+    //   announcements?: Announcements;
+    //   container?: Element;
+    //   restoreFocus?: boolean;
+    //   screenReaderInstructions?: ScreenReaderInstructions;
+    // };
+    // autoScroll?: boolean | AutoScrollOptions;
+    // cancelDrop?: CancelDrop;
+    // children?: React.ReactNode;
+    // collisionDetection?: CollisionDetection;
+    measuring?: MeasuringConfiguration;
+    // modifiers?: Modifiers;
+    // sensors?: SensorDescriptor<any>[];
+    onDragStart?(event: DragStartEvent): void;
+    // onDragMove?(event: DragMoveEvent): void;
+    // onDragOver?(event: DragOverEvent): void;
+    onDragEnd?(event: DragEndEvent): void;
+    // onDragCancel?(event: DragCancelEvent): void;
+  } = {
+    onDragStart: (event: DragStartEvent) => {
+      setActive(event.active.data.current);
+    },
+    onDragEnd: (event: DragEndEvent) => {
+      console.log(event);
+      setActive(undefined);
+    },
+    measuring: {
+      draggable: {
+        measure: (node) => {
+          // console.log('the measured node: ', node);
+          console.log('node measure: ', node.getBoundingClientRect());
+          return node.getBoundingClientRect();
+        },
+      },
+    },
+  };
+  /**
+   * MeasuringConfiguration
+ * onDragStart?(event: DragStartEvent): void;
+    onDragMove?(event: DragMoveEvent): void;
+    onDragOver?(event: DragOverEvent): void;
+    onDragEnd?(event: DragEndEvent): void;
+    onDragCancel?(event: DragCancelEvent): void;
+ */
   return (
     <StyledContainer>
       <GlobalBookingContext.Provider
-        value={{ reloadData, day_schedule, dayEvents, wishlist }}
+        value={{ reloadData, day_schedule, dayEvents, wishlist, updateEvent }}
       >
-        <DndProvider backend={HTML5Backend}>
-          <BookingProvider>
-            <Toolbar
-              instructors={day_schedule}
-              addInstructor={addInstructor}
-              className="top"
-            ></Toolbar>
-            <Board
-              instructors={instructors}
-              days={day_schedule}
-              dayEvents={dayEvents}
-              className="left"
-            ></Board>
-            <div className="right">
-              <Calendar
-                shouldHighlightWeekends
-                value={dateParsed}
-                onChange={setDate}
-                customDaysClassName={freeDatesCalendar}
-                calendarClassName="responsive-calendar"
-              />
-              <Wishlist wishlistEvents={wishlist}></Wishlist>
-            </div>
-          </BookingProvider>
-        </DndProvider>
+        <Toolbar
+          instructors={day_schedule}
+          addInstructor={addInstructor}
+          className="top"
+        ></Toolbar>
+
+        <DndContext {...monitorDrag}>
+          <Board
+            instructors={instructors}
+            days={day_schedule}
+            dayEvents={dayEvents}
+            className="left"
+          ></Board>
+          <div className="right">
+            <Calendar
+              shouldHighlightWeekends
+              value={dateParsed}
+              onChange={setDate}
+              customDaysClassName={freeDatesCalendar}
+              calendarClassName="responsive-calendar"
+            />
+            <Wishlist wishlistEvents={wishlist}></Wishlist>
+          </div>
+
+          <DragOverlay>
+            {activeItem && (
+              <BookingCard event={activeItem} status="drag"></BookingCard>
+            )}
+          </DragOverlay>
+        </DndContext>
+        <Modal open={innerLoading}>
+          <CircularProgress variant="soft" color="neutral" />
+        </Modal>
       </GlobalBookingContext.Provider>
     </StyledContainer>
   );

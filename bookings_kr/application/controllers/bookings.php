@@ -51,15 +51,15 @@ class Bookings extends CI_Controller
       );
       $this->db->insert('bk_day_groups', $data_new);
 
-      $array_log = array(
-        'l_user' => $this->session->userdata('user_id'),
-        'l_action' => 1,
-        'l_reference' => '',
-        'l_observations' => 'User Create Day :' . $current_date,
-        'l_student' => NULL,
-        'l_date' => date("Y-m-d H:i:s")
-      );
-      $this->db->insert("logs", $array_log);
+      // $array_log = array(
+      //   'l_user' => $this->session->userdata('user_id'),
+      //   'l_action' => 1,
+      //   'l_reference' => '',
+      //   'l_observations' => 'User Create Day :' . $current_date,
+      //   'l_student' => NULL,
+      //   'l_date' => date("Y-m-d H:i:s")
+      // );
+      // $this->db->insert("logs", $array_log);
     }
 
     if ($this->input->post('del_ins') == 1) {
@@ -572,7 +572,7 @@ class Bookings extends CI_Controller
     }
 
     $array_log = array(
-      'l_user' => $this->session->userdata('user_id'),
+      'l_user' => $this->session->userdata('user_id') || 'tet',
       'l_action' => 4,
       'l_reference' => '',
       'l_observations' => 'User Create booking for  :' . $student,

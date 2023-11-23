@@ -30,7 +30,13 @@ export const Toolbar: FC<ToolbarProps> = ({
           <div>
             There is no instructors assigned to this date. Please assign one.
           </div>
-          <Button color="success" onClick={addInstructor} variant="solid">
+          <Button
+            color="success"
+            onClick={() => {
+              addInstructor();
+            }}
+            variant="solid"
+          >
             Add instructor
           </Button>
         </Alert>

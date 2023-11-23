@@ -1,7 +1,8 @@
 import { FC } from 'react';
 import styled from 'styled-components';
-import { GridSpace } from './GridSpace';
+import { GridSpace, GridSpaceDesc } from './GridSpace';
 import { BookingCard } from './BookingCard';
+import { DraggableBooking } from './DraggableBooking';
 
 export interface BoardProps {
   instructors: Array<any>;
@@ -33,7 +34,7 @@ export const Board: FC<BoardProps> = ({
     <BoardContainer {...{ className }}>
       {days && days.length > 0 && (
         <>
-          <GridSpace description={true} key={`col-desc`}></GridSpace>
+          <GridSpaceDesc></GridSpaceDesc>
           {days.map((day, index) => {
             const { bd_id, bd_date } = day;
             const events = dayEvents.filter((event) => event.group === bd_id);
@@ -41,17 +42,12 @@ export const Board: FC<BoardProps> = ({
               <div>
                 <ListDraggable key={`col-${index}`}>
                   {events.map((event: any, eventIndex: any) => (
-                    <BookingCard
-                      {...event}
-                      wishlist={false}
-                      key={`bk-${eventIndex}-${index}`}
-                    ></BookingCard>
+                    <DraggableBooking
+                      event={event}
+                      status="board"
+                    ></DraggableBooking>
                   ))}
-                  <GridSpace
-                    description={false}
-                    id={bd_id}
-                    date={bd_date}
-                  ></GridSpace>
+                  <GridSpace id={bd_id} date={bd_date}></GridSpace>
                 </ListDraggable>
               </div>
             );

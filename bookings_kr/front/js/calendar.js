@@ -9,6 +9,7 @@ var Calendar = {
     booking_types: { 1: "Student", 2: "Extras", 3: "Special" },
     student_level: { "": "---", 1: "L1", 2: "L2", 3: "L3", 4: "Ind" },
     extra_level: { "": "Choose", 1: "Not Available", 2: "Setup / Pickup" },
+    lessonType: { "": "Choose", KITE: "KITE", WING: "WING", SUP: "SUP" },
   },
 
   cancelHTML:
@@ -163,7 +164,6 @@ var Calendar = {
     $(".container_cal").css({ width: pxwidth + 220 - 60 });
     $("#more_icon").css({ display: "none" });
   },
-
   load: function (id_chain) {
     var url = base_url + "welcome/json_event";
 
@@ -214,7 +214,6 @@ var Calendar = {
           },
         });
         $(".icon-comment").tooltip();
-
 
         Calendar.makeDraggable_container(".cal_day > .event");
         Calendar.add_confirm_dialog(".confirm");
@@ -1628,7 +1627,6 @@ var Calendar = {
       }
     }
   },
-
   special_exit: function (obj) {
     var special_users = $(obj).parent().children(".special_users");
     special_users.fadeIn();

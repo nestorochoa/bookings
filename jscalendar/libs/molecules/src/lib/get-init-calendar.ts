@@ -1,74 +1,33 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { FreeDates } from './bookings';
-import { BookingTypes, StudentLevel, User } from './general';
-
-export interface fetcherProps {
-  input: RequestInfo | URL;
-  init?: RequestInit | undefined;
-}
-
-export interface StateProps {
-  wishlist: Array<any>;
-  isLoading: boolean;
-  date: string;
-  error?: any;
-  day_sel: string;
-  dayEvents: Array<any>;
-  instructors: Array<User>;
-  select_booking_types: Array<BookingTypes>;
-  select_student_level: Array<StudentLevel>;
-  day_schedule: Array<any>;
-  freeDatesCalendar: Array<any>;
-  dateParsed: any;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface UseGetInit {
-  error?: any;
-  isLoading: boolean;
-  setDate: any;
-  wishlist: any;
-  addInstructor: any;
-  dayEvents: any;
-  date: string;
-  dateParsed: string;
-  freeDatesCalendar: Array<any>;
-  day_schedule: Array<any>;
-  instructors: Array<User>;
-  reloadData: any;
-}
-
-interface GetBaseInfoDayBooking {
-  (apiUrl: string, date?: string): Promise<{
-    day_sel: string;
-    freeDates: Array<FreeDates>;
-    day_schedule: Array<any>;
-  }>;
-}
-
-interface GetBaseInfoBooking {
-  (apiUrl: string): Promise<{
-    instructors: Array<User>;
-    select_booking_types: Array<BookingTypes>;
-    select_student_level: Array<StudentLevel>;
-  }>;
-}
+import {
+  DateInterface,
+  DaySchedule,
+  FreeDates,
+  GetBaseInfoBooking,
+  GetBaseInfoDayBooking,
+  StateHookProps,
+  UseGetInit,
+} from './types';
 
 export function useGetInit(apiUrl: string): UseGetInit {
-  const [data, setData] = useState<StateProps>({
-    instructors: [],
-    select_booking_types: [],
-    select_student_level: [],
-    wishlist: [],
-    dayEvents: [],
+  const [data, setData] = useState<StateHookProps>({
     isLoading: true,
-    date: '',
-    error: null,
-    day_sel: '',
-    day_schedule: [],
-    freeDatesCalendar: [],
-    dateParsed: {},
+    innerLoading: false,
+    dateString: '',
+    dateParsed: undefined,
+    dayValues: {
+      day_schedule: [],
+      dayEvents: [],
+      freeDatesCalendar: [],
+      wishlist: [],
+    },
+    constantValues: {
+      instructors: [],
+      select_booking_types: [],
+      select_student_level: [],
+    },
+    error: undefined,
   });
 
   useEffect(() => {
@@ -77,29 +36,33 @@ export function useGetInit(apiUrl: string): UseGetInit {
         await getBaseInfoBooking(apiUrl);
       setData((preData) => ({
         ...preData,
-        instructors,
-        select_booking_types,
-        select_student_level,
+        constantValues: {
+          instructors,
+          select_booking_types,
+          select_student_level,
+        },
       }));
     })();
   }, [apiUrl]);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const { day_sel, freeDates, day_schedule } =
-          await getBaseInfoDayBooking(apiUrl, data.date);
+  const reloadAll = async () => {
+    try {
+      const { day_sel, freeDates, day_schedule } = await getBaseInfoDayBooking(
+        apiUrl,
+        data.dateString
+      );
 
-        const splitDay = day_sel.split('/');
-        const mapped = {
-          dateParsed: {
-            year: parseInt(splitDay[2]),
-            month: parseInt(splitDay[1]),
-            day: parseInt(splitDay[0]),
-          },
-          freeDatesCalendar: freeDates.map(({ bd_date, available }: any) => {
+      const splitDay = day_sel.split('/');
+      const mapped = {
+        dateParsed: {
+          year: parseInt(splitDay[2]),
+          month: parseInt(splitDay[1]),
+          day: parseInt(splitDay[0]),
+        },
+        freeDatesCalendar: freeDates.reduce<Array<any>>(
+          (prev, { bd_date, available }: FreeDates) => {
             const splitDate = bd_date.split('-');
-            return {
+            prev.push({
               year: parseInt(splitDate[0]),
               month: parseInt(splitDate[1]),
               day: parseInt(splitDate[2]),
@@ -107,64 +70,136 @@ export function useGetInit(apiUrl: string): UseGetInit {
                 available === '1'
                   ? 'highlight dateAvailable'
                   : 'highlight noAvailable',
-            };
-          }),
+            });
+            return prev;
+          },
+          []
+        ),
+      };
+
+      const wishlist = await getWishlist(apiUrl, day_sel);
+      const dayEvents = await getDayEvents(apiUrl, day_schedule);
+
+      setData((preData) => ({
+        ...preData,
+        dayValues: {
           day_schedule,
-        };
-
-        const wishlist = await getWishlist(apiUrl, day_sel);
-        const dayEvents = await getDayEvents(apiUrl, day_schedule);
-
-        setData((preData) => ({
-          ...preData,
-          wishlist,
-          isLoading: false,
           dayEvents,
-          date: day_sel,
-          ...mapped,
-        }));
-      } catch (e) {
-        setData({
-          ...data,
-          error: e,
-          isLoading: false,
-        });
-      }
+          freeDatesCalendar: mapped.freeDatesCalendar,
+          wishlist,
+        },
+        isLoading: false,
+        innerLoading: false,
+        dateString: day_sel,
+        dateParsed: mapped.dateParsed,
+      }));
+    } catch (e) {
+      setData({
+        ...data,
+        error: e,
+        innerLoading: false,
+        isLoading: false,
+      });
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      await reloadAll();
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiUrl, data.date]);
+  }, [apiUrl, data.dateString]);
 
-  const setDate = (date: any) => {
-    console.log(date, 'Before');
-    setData({ ...data, date: `${date.day}/${date.month}/${date.year}` });
+  const setDate = (date: DateInterface) => {
+    setData({
+      ...data,
+      dateString: `${date.day}/${date.month}/${date.year}`,
+      dateParsed: date,
+      innerLoading: true,
+    });
   };
 
   const addInstructor = async () => {
+    setData((preData) => ({
+      ...preData,
+      isLoading: true,
+    }));
     const addInstructorData = new FormData();
     addInstructorData.append('add_ins', '1');
-    addInstructorData.append('date_sel', data.day_sel);
+    addInstructorData.append('date_sel', data.dateString);
     const responseAdd = await axios.post(
-      `${apiUrl}/bookings/wishlist`,
+      `${apiUrl}/bookings/init`,
       addInstructorData
     );
+    // await reloadAll();
     return responseAdd.data;
   };
 
   const reloadData = async () => {
-    const wishlistR = await getWishlist(apiUrl, data.day_sel);
-    const dayEventsR = await getDayEvents(apiUrl, data.day_schedule);
+    const wishlistR = await getWishlist(apiUrl, data.dateString);
+    const dayEventsR = await getDayEvents(apiUrl, data.dayValues.day_schedule);
     setData((oldData) => ({
       ...oldData,
-      wishlist: wishlistR,
-      dayEvents: dayEventsR,
+      dayValues: {
+        ...oldData.dayValues,
+        wishlist: wishlistR,
+        dayEvents: dayEventsR,
+      },
+    }));
+  };
+
+  const reloadDays = async () => {
+    const { day_schedule } = await getBaseInfoDayBooking(
+      apiUrl,
+      data.dateString
+    );
+    setData((oldData) => ({
+      ...oldData,
+      dayValues: {
+        ...oldData.dayValues,
+        day_schedule,
+      },
+    }));
+  };
+
+  const updateEvent = async (props: {
+    type: number;
+    group: number;
+    minutes: number;
+    duration: number;
+    student: string;
+    id: number;
+  }) => {
+    const updateData = new FormData();
+    Object.entries(props).forEach(([key, value]) => {
+      updateData.append(key, value.toString());
+    });
+
+    const responseUpdate = await axios.post(
+      `${apiUrl}/bookings/json_save_lesson`,
+      updateData
+    );
+
+    return responseUpdate.data;
+  };
+
+  const setInnerLoading = (inner: boolean) => {
+    setData((prevData) => ({
+      ...prevData,
+      innerLoading: inner,
     }));
   };
 
   return {
     ...data,
-    setDate,
-    addInstructor,
-    reloadData,
+    functions: {
+      setDate,
+      addInstructor,
+      reloadData,
+      updateEvent,
+      reloadDays,
+      setInnerLoading,
+    },
   };
 }
 
@@ -209,11 +244,11 @@ export const getWishlist = async (apiUrl: string, date: string) => {
 
 export const getDayEvents = async (
   apiUrl: string,
-  day_schedule: Array<any>
+  day_schedule: Array<DaySchedule>
 ) => {
   const bookIds = day_schedule
-    .reduce((prev: Array<string>, { bd_id, bd_inactive }: any) => {
-      if (!(bd_inactive !== null && bd_inactive.toString() === '1')) {
+    .reduce((prev: Array<string>, { bd_id, bd_inactive }: DaySchedule) => {
+      if (!(bd_inactive !== null && bd_inactive === '1')) {
         prev.push(bd_id);
       }
       return prev;
@@ -231,6 +266,30 @@ export const getDayEvents = async (
   const { events: dayEvents } = responseEvents.data;
 
   return dayEvents;
+};
+
+export const updateEvent = async (
+  apiUrl: string,
+  props: {
+    type: number;
+    group: number;
+    minutes: number;
+    duration: number;
+    student: string;
+    id: number;
+  }
+) => {
+  const updateData = new FormData();
+  Object.entries(props).forEach(([key, value]) => {
+    updateData.append(key, value.toString());
+  });
+
+  const responseUpdate = await axios.post(
+    `${apiUrl}/bookings/json_save_lesson`,
+    updateData
+  );
+
+  return responseUpdate.data;
 };
 
 export default useGetInit;

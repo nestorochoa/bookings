@@ -4,33 +4,23 @@ import {
   faCircleXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { FC } from 'react';
+import { FC, forwardRef } from 'react';
 import styled from 'styled-components';
-import { ItemTypes, generalSettings } from './general';
-import { useDrag } from 'react-dnd';
+import { generalSettings } from './general';
+import { Event } from './types';
 
 const round = (n: number, p = 2) =>
   ((e) => Math.round(n * e) / e)(Math.pow(10, p));
 
+export type StatusOps = 'wishlist' | 'board' | 'drag';
+
 export interface BookCardProps {
-  id: string;
-  start_time: string;
-  end_time: string;
-  time_description: string;
-  minutes: string;
-  duration: number;
-  bk_level: string;
-  level: string;
-  student: string;
-  obs: string;
-  hl: string;
-  special: Array<any>;
-  count_cancel: string;
-  current: string;
-  wishlist: boolean;
-  student_name: string;
-  student_mobile: string;
+  event: Event;
+  status: StatusOps;
+  dragAttributes?: any;
+  dragListeners?: any;
 }
+
 const StyledCard = styled.div`
   --round-edge: 0.3rem;
   width: ${generalSettings.getWidth};
@@ -74,95 +64,103 @@ const StyledCard = styled.div`
     padding: 0.2rem 0.4rem;
     overflow: auto;
   }
-  ${({ wishlist, topPosition }: { wishlist: boolean; topPosition: string }) => {
-    return wishlist
-      ? `
-    .bookBody{
-      background-color:#961D26;
+
+  ${({ status, topPosition }: { status: StatusOps; topPosition: string }) => {
+    let out = '';
+    if (status === 'wishlist') {
+      out = `
+      .bookBody{
+        background-color:#961D26;
+      }
+    `;
     }
-  `
-      : `
-    position:absolute;
-    top:${topPosition};
-    .bookBody{
-    background-color:#6af;
+    if (status === 'board') {
+      out = `
+      position:absolute;
+      top:${topPosition};
+      .bookBody{
+      background-color:#6af;
+      }
+    `;
     }
-  `;
+    if (status === 'drag') {
+      out = `  .bookBody {
+      background-color:#66aaff9e;
+      }
+      `;
+    }
+    return out;
   }}
 `;
-export const BookingCard: FC<BookCardProps> = (props) => {
-  const {
-    id,
-    count_cancel,
-    duration,
-    special,
-    student_name,
-    student_mobile,
-    time_description,
-    level,
-    wishlist,
-    obs,
-    start_time,
-  } = props;
-  const topPosition = generalSettings.getPositionInRem(start_time);
+export const BookingCard = forwardRef(
+  (
+    props: BookCardProps,
+    outRef:
+      | ((instance: HTMLInputElement | null) => void)
+      | React.MutableRefObject<HTMLInputElement | null>
+      | null
+  ) => {
+    const { event, status, dragAttributes, dragListeners } = props;
+    const {
+      start_time,
+      level,
+      time_description,
+      duration,
+      student_name,
+      student_mobile,
+      special,
+      obs,
+      id,
+      count_cancel,
+    } = event;
+    const topPosition = generalSettings.getPositionInRem(start_time);
 
-  const [{ isDragging }, drag, dragPreview] = useDrag(() => ({
-    type: ItemTypes.LESSON,
-    item: props,
-
-    collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(),
-    }),
-    end: (item, monitor) => {
-      if (monitor.didDrop()) {
-        console.log(monitor.getDropResult());
-      }
-    },
-  }));
-
-  return (
-    <StyledCard {...{ wishlist, topPosition }} ref={drag}>
-      <div className="Bookheader">
-        <div className="info">
-          <div className="level">{level}</div>
-          <div className="time">{time_description}</div>
-          <div className="hours_left">{round(duration / 60)}</div>
-        </div>
-        <div className="actions">
-          {!wishlist && (
-            <button>
-              <FontAwesomeIcon icon={faCircleCheck}></FontAwesomeIcon>
-            </button>
+    return (
+      <StyledCard ref={outRef as any} {...{ status, topPosition }}>
+        <div className="Bookheader" {...dragAttributes} {...dragListeners}>
+          <div className="info">
+            <div className="level">{level}</div>
+            <div className="time">{time_description}</div>
+            <div className="hours_left">{round(duration / 60)}</div>
+          </div>
+          {status !== 'drag' && (
+            <div className="actions">
+              {status !== 'wishlist' && (
+                <button>
+                  <FontAwesomeIcon icon={faCircleCheck}></FontAwesomeIcon>
+                </button>
+              )}
+              <input type="checkbox" className="check_sms" value={id} />
+              <button>
+                <FontAwesomeIcon icon={faCircleXmark}></FontAwesomeIcon>
+              </button>
+              {status !== 'wishlist' && (
+                <button>
+                  <FontAwesomeIcon icon={faArrowRotateLeft}></FontAwesomeIcon>
+                </button>
+              )}
+              <div className="cancel_times">{count_cancel}</div>
+            </div>
           )}
-          <input type="checkbox" className="check_sms" value={id} />
-          <button>
-            <FontAwesomeIcon icon={faCircleXmark}></FontAwesomeIcon>
-          </button>
-          {!wishlist && (
-            <button>
-              <FontAwesomeIcon icon={faArrowRotateLeft}></FontAwesomeIcon>
-            </button>
-          )}
-          <div className="cancel_times">{count_cancel}</div>
         </div>
-      </div>
-      <div className="bookBody">
-        {special.length === 0 ? (
-          <>
-            <div className="info_student">{student_name}</div>
-            <div className="info_mobile">{student_mobile}</div>
-            <div className="info_notes">{obs}</div>
-          </>
-        ) : (
-          <>
-            {special.map((elm: any, index) => (
-              <div key={`special-${id}-${index}`}>
-                {elm.name} - {elm.phone}
-              </div>
-            ))}
-          </>
-        )}
-      </div>
-    </StyledCard>
-  );
-};
+        <div className="bookBody">
+          {special && special.length > 0 ? (
+            <>
+              {special.map((elm: any, index) => (
+                <div key={`special-${id}-${index}`}>
+                  {elm.name} - {elm.phone}
+                </div>
+              ))}
+            </>
+          ) : (
+            <>
+              <div className="info_student">{student_name}</div>
+              <div className="info_mobile">{student_mobile}</div>
+              <div className="info_notes">{obs}</div>
+            </>
+          )}
+        </div>
+      </StyledCard>
+    );
+  }
+);
