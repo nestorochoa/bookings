@@ -11,7 +11,6 @@ var Calendar = {
     extra_level: { "": "Choose", 1: "Not Available", 2: "Setup / Pickup" },
     lessonType: { "": "Choose", KITE: "KITE", WING: "WING", SUP: "SUP" },
   },
-
   cancelHTML:
     '<div class="btn-group"><button class="btn" onclick="Calendar.clCancel(this);">NO</button><button class="btn"  onclick="Calendar.cnCancel(this);">YES</button></div>',
   cancelHTMLinstructor:

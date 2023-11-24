@@ -17,13 +17,8 @@ class Instructors extends CI_Controller
     $this->config_pag['uri_segment'] = 2;
 
     if ($this->session->userdata('user_id')) {
-      $this->load->helper('mysqli');
       $user_type = $this->session->userdata('user_type');
-
-      $this->basic_var['recordset_menu'] = $this->db
-        ->join('user_access', 'id_menu like concat(menu_id, "%")', 'left')
-        ->order_by('id_menu', 'asc')
-        ->where('user_type', $user_type)->get('Menu')->result();
+      $this->basic_var['recordset_menu'] = $this->model_procedure->menu_user_type($user_type);
     } else {
       redirect('/', 'refresh');
     }

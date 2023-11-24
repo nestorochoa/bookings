@@ -11,12 +11,19 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
+  KeyboardSensor,
   MeasuringConfiguration,
+  Modifiers,
+  MouseSensor,
+  SensorDescriptor,
+  TouchSensor,
+  useSensor,
+  useSensors,
 } from '@dnd-kit/core';
 
 import { BookingProps, Event } from './types';
 import { CircularProgress, Modal } from '@mui/joy';
-import { snapTopCenterCursor } from './ModifiersDrag';
+import { snapToGrid } from './ModifiersDrag';
 import { BookingCard } from './BookingCard';
 
 const StyledContainer = styled.div`
@@ -88,6 +95,12 @@ export const BookingsManager: FC<BookingProps> = (props) => {
     innerLoading,
   } = props;
 
+  const mouseSensor = useSensor(MouseSensor);
+  const touchSensor = useSensor(TouchSensor);
+  const keyboardSensor = useSensor(KeyboardSensor);
+
+  const sensors = useSensors(mouseSensor, touchSensor, keyboardSensor);
+
   const monitorDrag: {
     // id?: string;
     // accessibility?: {
@@ -101,8 +114,8 @@ export const BookingsManager: FC<BookingProps> = (props) => {
     // children?: React.ReactNode;
     // collisionDetection?: CollisionDetection;
     measuring?: MeasuringConfiguration;
-    // modifiers?: Modifiers;
-    // sensors?: SensorDescriptor<any>[];
+    modifiers?: Modifiers;
+    sensors?: SensorDescriptor<any>[];
     onDragStart?(event: DragStartEvent): void;
     // onDragMove?(event: DragMoveEvent): void;
     // onDragOver?(event: DragOverEvent): void;
@@ -110,21 +123,24 @@ export const BookingsManager: FC<BookingProps> = (props) => {
     // onDragCancel?(event: DragCancelEvent): void;
   } = {
     onDragStart: (event: DragStartEvent) => {
-      setActive(event.active.data.current);
+      if (event.active.data.current)
+        setActive(event.active.data.current['event']);
     },
-    onDragEnd: (event: DragEndEvent) => {
-      console.log(event);
+    onDragEnd: (event: any) => {
+      console.log(event.activatorEvent.y, event);
       setActive(undefined);
     },
-    measuring: {
-      draggable: {
-        measure: (node) => {
-          // console.log('the measured node: ', node);
-          console.log('node measure: ', node.getBoundingClientRect());
-          return node.getBoundingClientRect();
-        },
-      },
-    },
+    sensors,
+    // modifiers: [snapToGrid],
+    // measuring: {
+    //   draggable: {
+    //     measure: (node) => {
+    //       // console.log('the measured node: ', node);
+    //       console.log('node measure: ', node.getBoundingClientRect());
+    //       return node.getBoundingClientRect();
+    //     },
+    //   },
+    // },
   };
   /**
    * MeasuringConfiguration

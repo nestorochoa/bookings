@@ -67,6 +67,7 @@ export const GridSpace: FC<GridProps> = ({ date, id }) => {
     data: {
       date,
       id,
+      accepts: ['bookcard'],
     },
   });
 

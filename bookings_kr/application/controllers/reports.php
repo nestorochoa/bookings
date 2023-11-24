@@ -21,10 +21,8 @@ class Reports extends CI_Controller
 		$this->config_pag['uri_segment'] = 2;
 
 		if ($this->session->userdata('user_id')) {
-			$this->load->helper('mysqli');
 			$user_type = $this->session->userdata('user_type');
-			$this->basic_var['recordset_menu'] = $this->db->query("CALL menu_user_type('{$user_type}');");
-			clean_mysqli_connection($this->db->conn_id);
+			$this->basic_var['recordset_menu'] = $this->model_procedure->menu_user_type($user_type);
 		}
 	}
 

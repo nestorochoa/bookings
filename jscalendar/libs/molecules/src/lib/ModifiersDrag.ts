@@ -25,3 +25,15 @@ export const snapTopCenterCursor: Modifier = ({
 
   return transform;
 };
+
+const gridSize = 20;
+
+export const snapToGrid: Modifier = (args: any) => {
+  const { transform } = args;
+
+  return {
+    ...transform,
+    x: Math.ceil(transform.x / gridSize) * gridSize,
+    y: Math.ceil(transform.y / gridSize) * gridSize,
+  };
+};
